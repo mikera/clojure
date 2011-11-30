@@ -908,7 +908,7 @@ static public abstract class HostExpr implements Expr, MaybePrimitiveExpr{
 				Symbol tag = tagOf(form);
 				PersistentVector args = PersistentVector.EMPTY;
 				for(ISeq s = RT.next(call); s != null; s = s.next())
-					args = args.cons(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
+					args = args.conj(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
 				if(c != null)
 					return new StaticMethodExpr(source, line, tag, c, munge(sym.name), args);
 				else
@@ -2084,7 +2084,7 @@ public static class TryExpr implements Expr{
 					{
 					if(caught)
                                             throw Util.runtimeException("Only catch or finally clause can follow catch in try expression");
-					body = body.cons(f);
+					body = body.conj(f);
 					}
 				else
 					{
@@ -2118,7 +2118,7 @@ public static class TryExpr implements Expr{
 							                                                                         : null),
 							                                null,false);
 							Expr handler = (new BodyExpr.Parser()).parse(context, RT.next(RT.next(RT.next(f))));
-							catches = catches.cons(new CatchClause(c, lb, handler));
+							catches = catches.conj(new CatchClause(c, lb, handler));
 							}
 						finally
 							{
@@ -2433,7 +2433,7 @@ public static class NewExpr implements Expr{
 				throw new IllegalArgumentException("Unable to resolve classname: " + RT.second(form));
 			PersistentVector args = PersistentVector.EMPTY;
 			for(ISeq s = RT.next(RT.next(form)); s != null; s = s.next())
-				args = args.cons(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
+				args = args.conj(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
 			return new NewExpr(c, args, line);
 		}
 	}
@@ -2722,7 +2722,7 @@ public static class ListExpr implements Expr{
 	public Object eval() {
 		IPersistentVector ret = PersistentVector.EMPTY;
 		for(int i = 0; i < args.count(); i++)
-			ret = (IPersistentVector) ret.cons(((Expr) args.nth(i)).eval());
+			ret = (IPersistentVector) ret.conj(((Expr) args.nth(i)).eval());
 		return ret.seq();
 	}
 
@@ -2783,8 +2783,8 @@ public static class MapExpr implements Expr{
 			IMapEntry e = (IMapEntry) s.first();
 			Expr k = analyze(context == C.EVAL ? context : C.EXPRESSION, e.key());
 			Expr v = analyze(context == C.EVAL ? context : C.EXPRESSION, e.val());
-			keyvals = (IPersistentVector) keyvals.cons(k);
-			keyvals = (IPersistentVector) keyvals.cons(v);
+			keyvals = (IPersistentVector) keyvals.conj(k);
+			keyvals = (IPersistentVector) keyvals.conj(v);
 			if(!(k instanceof LiteralExpr && v instanceof LiteralExpr))
 				constant = false;
 			}
@@ -2848,7 +2848,7 @@ public static class SetExpr implements Expr{
 			{
 			Object e = s.first();
 			Expr expr = analyze(context == C.EVAL ? context : C.EXPRESSION, e);
-			keys = (IPersistentVector) keys.cons(expr);
+			keys = (IPersistentVector) keys.conj(expr);
 			if(!(expr instanceof LiteralExpr))
 				constant = false;
 			}
@@ -2862,7 +2862,7 @@ public static class SetExpr implements Expr{
 			for(int i=0;i<keys.count();i++)
 				{
 				LiteralExpr ve = (LiteralExpr)keys.nth(i);
-				set = (IPersistentSet)set.cons(ve.val());
+				set = (IPersistentSet)set.conj(ve.val());
 				}
 //			System.err.println("Constant: " + set);
 			return new ConstantExpr(set);
@@ -2884,7 +2884,7 @@ public static class VectorExpr implements Expr{
 	public Object eval() {
 		IPersistentVector ret = PersistentVector.EMPTY;
 		for(int i = 0; i < args.count(); i++)
-			ret = (IPersistentVector) ret.cons(((Expr) args.nth(i)).eval());
+			ret = (IPersistentVector) ret.conj(((Expr) args.nth(i)).eval());
 		return ret;
 	}
 
@@ -2910,7 +2910,7 @@ public static class VectorExpr implements Expr{
 		for(int i = 0; i < form.count(); i++)
 			{
 			Expr v = analyze(context == C.EVAL ? context : C.EXPRESSION, form.nth(i));
-			args = (IPersistentVector) args.cons(v);
+			args = (IPersistentVector) args.conj(v);
 			if(!(v instanceof LiteralExpr))
 				constant = false;
 			}
@@ -2924,7 +2924,7 @@ public static class VectorExpr implements Expr{
 			for(int i =0;i<args.count();i++)
 				{
 				LiteralExpr ve = (LiteralExpr)args.nth(i);
-				rv = rv.cons(ve.val());
+				rv = rv.conj(ve.val());
 				}
 //			System.err.println("Constant: " + rv);
 			return new ConstantExpr(rv);
@@ -3253,7 +3253,7 @@ static class StaticInvokeExpr implements Expr, MaybePrimitiveExpr{
 
 		PersistentVector argv = PersistentVector.EMPTY;
 		for(ISeq s = RT.seq(args); s != null; s = s.next())
-			argv = argv.cons(analyze(C.EXPRESSION, s.first()));
+			argv = argv.conj(analyze(C.EXPRESSION, s.first()));
 
 		return new StaticInvokeExpr(target,retClass,paramClasses.toArray(new Class[paramClasses.size()]),
 		                            paramTypes.toArray(new Type[paramTypes.size()]),variadic, argv, tag);
@@ -3336,7 +3336,7 @@ static class InvokeExpr implements Expr{
 			IFn fn = (IFn) fexpr.eval();
 			PersistentVector argvs = PersistentVector.EMPTY;
 			for(int i = 0; i < args.count(); i++)
-				argvs = argvs.cons(((Expr) args.nth(i)).eval());
+				argvs = argvs.conj(((Expr) args.nth(i)).eval());
 			return fn.applyTo(RT.seq( Util.ret1(argvs, argvs = null) ));
 			}
 		catch(Throwable e)
@@ -3426,7 +3426,7 @@ static class InvokeExpr implements Expr{
 			PersistentVector restArgs = PersistentVector.EMPTY;
 			for(int i = MAX_POSITIONAL_ARITY; i < args.count(); i++)
 				{
-				restArgs = restArgs.cons(args.nth(i));
+				restArgs = restArgs.conj(args.nth(i));
 				}
 			MethodExpr.emitArgsAsArray(restArgs, objx, gen);
 			}
@@ -3503,7 +3503,7 @@ static class InvokeExpr implements Expr{
 		PersistentVector args = PersistentVector.EMPTY;
 		for(ISeq s = RT.seq(form.next()); s != null; s = s.next())
 			{
-			args = args.cons(analyze(context, s.first()));
+			args = args.conj(analyze(context, s.first()));
 			}
 //		if(args.count() > MAX_POSITIONAL_ARITY)
 //			throw new IllegalArgumentException(
@@ -3862,9 +3862,9 @@ static public class ObjExpr implements Expr{
 			{
 			LocalBinding lb = (LocalBinding) s.first();
 			if(lb.getPrimitiveType() != null)
-				tv = tv.cons(Type.getType(lb.getPrimitiveType()));
+				tv = tv.conj(Type.getType(lb.getPrimitiveType()));
 			else
-				tv = tv.cons(OBJECT_TYPE);
+				tv = tv.conj(OBJECT_TYPE);
 			}
 		Type[] ret = new Type[tv.count()];
 		for(int i = 0; i < tv.count(); i++)
@@ -4082,7 +4082,7 @@ static public class ObjExpr implements Expr{
 				ctorgen.visitVarInsn(OBJECT_TYPE.getOpcode(Opcodes.ILOAD), a);
 				ctorgen.putField(objtype, lb.name, OBJECT_TYPE);
 				}
-            closesExprs = closesExprs.cons(new LocalBindingExpr(lb, null));
+            closesExprs = closesExprs.conj(new LocalBindingExpr(lb, null));
 			}
 
 
@@ -4977,11 +4977,11 @@ public static class FnMethod extends ObjMethod{
 					LocalBinding lb = pc.isPrimitive() ?
 					                  registerLocal(p, null, new MethodParamExpr(pc), true)
 					                           : registerLocal(p, state == PSTATE.REST ? ISEQ : tagOf(p), null, true);
-					argLocals = argLocals.cons(lb);
+					argLocals = argLocals.conj(lb);
 					switch(state)
 						{
 						case REQ:
-							method.reqParms = method.reqParms.cons(lb);
+							method.reqParms = method.reqParms.conj(lb);
 							break;
 						case REST:
 							method.restParm = lb;
@@ -5577,10 +5577,10 @@ public static class BodyExpr implements Expr, MaybePrimitiveExpr{
 				         analyze(C.STATEMENT, forms.first())
 				                                                            :
 				         analyze(context, forms.first());
-				exprs = exprs.cons(e);
+				exprs = exprs.conj(e);
 				}
 			if(exprs.count() == 0)
-				exprs = exprs.cons(NIL_EXPR);
+				exprs = exprs.conj(NIL_EXPR);
 			return new BodyExpr(exprs);
 		}
 	}
@@ -5694,7 +5694,7 @@ public static class LetFnExpr implements Expr{
 						throw Util.runtimeException("Can't let qualified name: " + sym);
 					LocalBinding lb = registerLocal(sym, tagOf(sym), null,false);
 					lb.canBeCleared = false;
-					lbs = lbs.cons(lb);
+					lbs = lbs.conj(lb);
 					}
 				PersistentVector bindingInits = PersistentVector.EMPTY;
 				for(int i = 0; i < bindings.count(); i += 2)
@@ -5704,7 +5704,7 @@ public static class LetFnExpr implements Expr{
 					LocalBinding lb = (LocalBinding) lbs.nth(i / 2);
 					lb.init = init;
 					BindingInit bi = new BindingInit(lb, init);
-					bindingInits = bindingInits.cons(bi);
+					bindingInits = bindingInits.conj(bi);
 					}
 				return new LetFnExpr(bindingInits, (new BodyExpr.Parser()).parse(context, body));
 				}
@@ -5732,7 +5732,7 @@ public static class LetFnExpr implements Expr{
 		for(int i = 0; i < bindingInits.count(); i++)
 			{
 			BindingInit bi = (BindingInit) bindingInits.nth(i);
-			lbset = (IPersistentSet) lbset.cons(bi.binding);
+			lbset = (IPersistentSet) lbset.conj(bi.binding);
 			bi.init.emit(C.EXPRESSION, objx, gen);
 			gen.visitVarInsn(OBJECT_TYPE.getOpcode(Opcodes.ISTORE), bi.binding.idx);
 			}
@@ -5810,7 +5810,7 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 			IPersistentVector recurMismatches = PersistentVector.EMPTY;
 			for (int i = 0; i < bindings.count()/2; i++)
 				{
-				recurMismatches = recurMismatches.cons(RT.F);
+				recurMismatches = recurMismatches.conj(RT.F);
 				}
 
 			//may repeat once for each binding with a mismatch, return breaks
@@ -5854,10 +5854,10 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 						//sequential enhancement of env (like Lisp let*)
 						LocalBinding lb = registerLocal(sym, tagOf(sym), init,false);
 						BindingInit bi = new BindingInit(lb, init);
-						bindingInits = bindingInits.cons(bi);
+						bindingInits = bindingInits.conj(bi);
 
 						if(isLoop)
-							loopLocals = loopLocals.cons(lb);
+							loopLocals = loopLocals.conj(lb);
 						}
 					if(isLoop)
 						LOOP_LOCALS.set(loopLocals);
@@ -6108,7 +6108,7 @@ public static class RecurExpr implements Expr{
 			PersistentVector args = PersistentVector.EMPTY;
 			for(ISeq s = RT.seq(form.next()); s != null; s = s.next())
 				{
-				args = args.cons(analyze(C.EXPRESSION, s.first()));
+				args = args.conj(analyze(C.EXPRESSION, s.first()));
 				}
 			if(args.count() != loopLocals.count())
 				throw new IllegalArgumentException(
@@ -6528,7 +6528,7 @@ private static int registerKeywordCallsite(Keyword keyword){
 
 	IPersistentVector keywordCallsites = (IPersistentVector) KEYWORD_CALLSITES.deref();
 
-	keywordCallsites = keywordCallsites.cons(keyword);
+	keywordCallsites = keywordCallsites.conj(keyword);
 	KEYWORD_CALLSITES.set(keywordCallsites);
 	return keywordCallsites.count()-1;
 }
@@ -6539,7 +6539,7 @@ private static int registerProtocolCallsite(Var v){
 
 	IPersistentVector protocolCallsites = (IPersistentVector) PROTOCOL_CALLSITES.deref();
 
-	protocolCallsites = protocolCallsites.cons(v);
+	protocolCallsites = protocolCallsites.conj(v);
 	PROTOCOL_CALLSITES.set(protocolCallsites);
 	return protocolCallsites.count()-1;
 }
@@ -6550,7 +6550,7 @@ private static void registerVarCallsite(Var v){
 
 	IPersistentCollection varCallsites = (IPersistentCollection) VAR_CALLSITES.deref();
 
-	varCallsites = varCallsites.cons(v);
+	varCallsites = varCallsites.conj(v);
 	VAR_CALLSITES.set(varCallsites);
 //	return varCallsites.count()-1;
 }
@@ -6828,7 +6828,7 @@ static void closeOver(LocalBinding b, ObjMethod method){
 			}
 		else if(IN_CATCH_FINALLY.deref() != null)
 			{
-			method.localsUsedInCatchFinally = (PersistentHashSet) method.localsUsedInCatchFinally.cons(b.idx);
+			method.localsUsedInCatchFinally = (PersistentHashSet) method.localsUsedInCatchFinally.conj(b.idx);
 			}
 		}
 }
@@ -7197,7 +7197,7 @@ static public class NewInstanceExpr extends ObjExpr{
 
 		ISeq rform = RT.next(form);
 
-		IPersistentVector interfaces = ((IPersistentVector) RT.first(rform)).cons(Symbol.intern("clojure.lang.IObj"));
+		IPersistentVector interfaces = ((IPersistentVector) RT.first(rform)).conj(Symbol.intern("clojure.lang.IObj"));
 
 
 		rform = RT.next(rform);
@@ -7256,7 +7256,7 @@ static public class NewInstanceExpr extends ObjExpr{
 			Class c = (Class) resolve((Symbol) s.first());
 			if(!c.isInterface())
 				throw new IllegalArgumentException("only interfaces are supported, had: " + c.getName());
-			interfaces = interfaces.cons(c);
+			interfaces = interfaces.conj(c);
 			}
 		Class superClass = Object.class;
 		Map[] mc = gatherMethods(superClass,RT.seq(interfaces));

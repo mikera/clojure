@@ -251,7 +251,7 @@ static void dispatchAction(Action action){
 		trans.enqueue(action);
 	else if(nested.get() != null)
 		{
-		nested.set(nested.get().cons(action));
+		nested.set(nested.get().conj(action));
 		}
 	else
 		action.agent.enqueue(action);
@@ -263,7 +263,7 @@ void enqueue(Action action){
 	while(!queued)
 		{
 		prior = aq.get();
-		queued = aq.compareAndSet(prior, new ActionQueue((IPersistentStack)prior.q.cons(action), prior.error));
+		queued = aq.compareAndSet(prior, new ActionQueue((IPersistentStack)prior.q.conj(action), prior.error));
 		}
 
 	if(prior.q.count() == 0 && prior.error == null)

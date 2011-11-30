@@ -14,7 +14,7 @@ package clojure.lang;
 
 import java.io.StringWriter;
 
-public abstract class AMapEntry extends APersistentVector implements IMapEntry{
+public abstract class AMapEntry extends APersistentVector implements IMapEntry, ISeq {
 
 public Object nth(int i){
 	if(i == 0)
@@ -41,8 +41,8 @@ public ISeq seq(){
 	return asVector().seq();
 }
 
-public IPersistentVector cons(Object o){
-	return asVector().cons(o);
+public IPersistentVector conj(Object o){
+	return asVector().conj(o);
 }
 
 public IPersistentCollection empty(){

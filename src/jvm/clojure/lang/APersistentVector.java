@@ -542,7 +542,7 @@ static class SubVector extends APersistentVector implements IObj{
 		if(start + i > end)
 			throw new IndexOutOfBoundsException();
 		else if(start + i == end)
-			return cons(val);
+			return conj(val);
 		return new SubVector(_meta, v.assocN(start + i, val), start, end);
 	}
 
@@ -550,8 +550,12 @@ static class SubVector extends APersistentVector implements IObj{
 		return end - start;
 	}
 
-	public IPersistentVector cons(Object o){
+	public IPersistentVector conj(Object o){
 		return new SubVector(_meta, v.assocN(end, o), start, end + 1);
+	}
+	
+	public ISeq cons(Object o) {
+		return new Cons(o, seq());
 	}
 
 	public IPersistentCollection empty(){

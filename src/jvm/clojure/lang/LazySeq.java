@@ -99,7 +99,11 @@ public ISeq more(){
 	return s.more();
 }
 
-public ISeq cons(Object o){
+public ISeq conj(Object o){
+	return RT.cons(o, seq());
+}
+
+public ISeq cons(Object o) {
 	return RT.cons(o, seq());
 }
 

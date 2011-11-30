@@ -15,6 +15,6 @@ int length();
 
 IPersistentVector assocN(int i, Object val);
 
-IPersistentVector cons(Object o);
+IPersistentVector conj(Object o);
 
 }

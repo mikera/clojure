@@ -167,7 +167,7 @@
       (.checkCast gen (totype clojure.lang.IPersistentCollection))
       (. gen (loadArgs))
       (. gen (invokeInterface (totype clojure.lang.IPersistentCollection)
-                              (. Method (getMethod "clojure.lang.IPersistentCollection cons(Object)"))))
+                              (. Method (getMethod "clojure.lang.IPersistentCollection conj(Object)"))))
       (. gen (checkCast imap-type))
       (. gen (putField ctype fmap imap-type))
       
@@ -396,7 +396,7 @@
       (entryAt [k] (when (contains? pmap k) (new clojure.lang.MapEntry k (v k))))
       (valAt ([k] (v k))
 	     ([k default] (if (contains? pmap k) (v k) default)))
-      (cons [m] (conj (snapshot) m))
+      (conj [m] (conj (snapshot) m))
       (count [] (count pmap))
       (assoc [k v] (assoc (snapshot) k v))
       (without [k] (dissoc (snapshot) k))

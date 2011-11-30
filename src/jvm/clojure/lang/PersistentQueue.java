@@ -108,11 +108,15 @@ public ISeq seq(){
 	return new Seq(f, RT.seq(r));
 }
 
-public PersistentQueue cons(Object o){
+public PersistentQueue conj(Object o){
 	if(f == null)     //empty
 		return new PersistentQueue(meta(), cnt + 1, RT.list(o), null);
 	else
-		return new PersistentQueue(meta(), cnt + 1, f, (r != null ? r : PersistentVector.EMPTY).cons(o));
+		return new PersistentQueue(meta(), cnt + 1, f, (r != null ? r : PersistentVector.EMPTY).conj(o));
+}
+
+public ISeq cons(Object o) {
+	return new Cons(o, seq());
 }
 
 public IPersistentCollection empty(){

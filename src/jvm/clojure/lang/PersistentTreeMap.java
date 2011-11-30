@@ -526,6 +526,22 @@ static abstract class Node extends AMapEntry{
 	Node balanceRight(Node parent){
 		return black(parent.key, parent.val(), parent.left(), this);
 	}
+	
+	public ISeq next() {
+		return RT.cons(val(), null);
+	}
+		
+	public ISeq more() {
+		return RT.cons(val(), null);
+	}
+	
+	public ISeq cons(Object o) {
+		return new Cons(o, this);
+	}
+	
+	public Object first() {
+		return key;
+	}
 
 	abstract Node replace(Object key, Object val, Node left, Node right);
 

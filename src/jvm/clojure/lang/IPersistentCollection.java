@@ -15,7 +15,7 @@ public interface IPersistentCollection extends Seqable {
 
 int count();
 
-IPersistentCollection cons(Object o);
+IPersistentCollection conj(Object o);
 
 IPersistentCollection empty();
 

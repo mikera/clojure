@@ -214,13 +214,13 @@
       
       ))
   (testing "IPersistentCollection"
-    (testing ".cons"
+    (testing ".conj"
       (let [rec (r 1 2)]
-        (are [x] (= rec (.cons rec x))
+        (are [x] (= rec (.conj rec x))
              nil {})
-        (is (= (r 1 3) (.cons rec {:b 3})))
-        (is (= (r 1 4) (.cons rec [:b 4])))
-        (is (= (r 1 5) (.cons rec (MapEntry. :b 5))))))))
+        (is (= (r 1 3) (.conj rec {:b 3})))
+        (is (= (r 1 4) (.conj rec [:b 4])))
+        (is (= (r 1 5) (.conj rec (MapEntry. :b 5))))))))
 
 (defrecord RecordWithSpecificFieldNames [this that k m o])
 (deftest defrecord-with-specific-field-names

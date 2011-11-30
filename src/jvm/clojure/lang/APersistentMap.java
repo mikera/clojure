@@ -20,7 +20,7 @@ public String toString(){
 	return RT.printString(this);
 }
 
-public IPersistentCollection cons(Object o){
+public IPersistentCollection conj(Object o){
 	if(o instanceof Map.Entry)
 		{
 		Map.Entry e = (Map.Entry) o;
@@ -43,6 +43,11 @@ public IPersistentCollection cons(Object o){
 		}
 	return ret;
 }
+
+public ISeq cons(Object o) {
+	return new Cons(o,seq());
+}
+
 
 public boolean equals(Object obj){
 	return mapEquals(this, obj);

@@ -23,7 +23,7 @@ static public PersistentTreeSet create(ISeq items){
 	PersistentTreeSet ret = EMPTY;
 	for(; items != null; items = items.next())
 		{
-		ret = (PersistentTreeSet) ret.cons(items.first());
+		ret = (PersistentTreeSet) ret.conj(items.first());
 		}
 	return ret;
 }
@@ -32,7 +32,7 @@ static public PersistentTreeSet create(Comparator comp, ISeq items){
 	PersistentTreeSet ret = new PersistentTreeSet(null, new PersistentTreeMap(null, comp));
 	for(; items != null; items = items.next())
 		{
-		ret = (PersistentTreeSet) ret.cons(items.first());
+		ret = (PersistentTreeSet) ret.conj(items.first());
 		}
 	return ret;
 }
@@ -48,7 +48,7 @@ public IPersistentSet disjoin(Object key) {
 	return this;
 }
 
-public IPersistentSet cons(Object o){
+public IPersistentSet conj(Object o){
 	if(contains(o))
 		return this;
 	return new PersistentTreeSet(meta(),impl.assoc(o,o));

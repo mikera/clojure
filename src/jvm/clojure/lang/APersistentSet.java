@@ -41,6 +41,10 @@ public int count(){
 	return impl.count();
 }
 
+public ISeq cons(Object o) {
+	return new Cons(o, seq());
+}
+
 public ISeq seq(){
 	return RT.keys(impl);
 }

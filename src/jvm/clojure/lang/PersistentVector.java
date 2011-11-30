@@ -132,7 +132,7 @@ public PersistentVector assocN(int i, Object val){
 		return new PersistentVector(meta(), cnt, shift, doAssoc(shift, root, i, val), tail);
 		}
 	if(i == cnt)
-		return cons(val);
+		return conj(val);
 	throw new IndexOutOfBoundsException();
 }
 
@@ -163,7 +163,7 @@ public IPersistentMap meta(){
 }
 
 
-public PersistentVector cons(Object val){
+public PersistentVector conj(Object val){
 	int i = cnt;
 	//room in tail?
 //	if(tail.length < 32)
@@ -758,4 +758,8 @@ static public void main(String[] args){
 
 }
 //  */
+
+	public ISeq cons(Object o) {
+		return new Cons(o, seq());
+	}
 }

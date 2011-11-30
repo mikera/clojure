@@ -37,4 +37,20 @@ public Object getValue(){
 	return val();
 }
 
+public Object first() {
+	return key();
+}
+
+public ISeq next() {
+	return RT.cons(_val, null);
+}
+
+public ISeq more() {
+	return next();
+}
+
+public ISeq cons(Object o) {
+	return new Cons(o,seq());
+}
+
 }

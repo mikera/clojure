@@ -541,8 +541,9 @@ static int countFrom(Object o){
 static public IPersistentCollection conj(IPersistentCollection coll, Object x){
 	if(coll == null)
 		return new PersistentList(x);
-	return coll.cons(x);
+	return coll.conj(x);
 }
+
 
 static public ISeq cons(Object x, Object coll){
 	//ISeq y = seq(coll);

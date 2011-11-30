@@ -648,14 +648,14 @@ public static class FnReader extends AFn{
 						Object sym = argsyms.valAt(i);
 						if(sym == null)
 							sym = garg(i);
-						args = args.cons(sym);
+						args = args.conj(sym);
 						}
 					}
 				Object restsym = argsyms.valAt(-1);
 				if(restsym != null)
 					{
-					args = args.cons(Compiler._AMP_);
-					args = args.cons(restsym);
+					args = args.conj(Compiler._AMP_);
+					args = args.conj(restsym);
 					}
 				}
 			return RT.list(Compiler.FN, args, form);
@@ -859,11 +859,11 @@ public static class SyntaxQuoteReader extends AFn{
 			{
 			Object item = seq.first();
 			if(isUnquote(item))
-				ret = ret.cons(RT.list(LIST, RT.second(item)));
+				ret = ret.conj(RT.list(LIST, RT.second(item)));
 			else if(isUnquoteSplicing(item))
-				ret = ret.cons(RT.second(item));
+				ret = ret.conj(RT.second(item));
 			else
-				ret = ret.cons(RT.list(LIST, syntaxQuote(item)));
+				ret = ret.conj(RT.list(LIST, syntaxQuote(item)));
 			}
 		return ret.seq();
 	}
@@ -873,8 +873,8 @@ public static class SyntaxQuoteReader extends AFn{
 		for(ISeq s = RT.seq(form); s != null; s = s.next())
 			{
 			IMapEntry e = (IMapEntry) s.first();
-			keyvals = (IPersistentVector) keyvals.cons(e.key());
-			keyvals = (IPersistentVector) keyvals.cons(e.val());
+			keyvals = (IPersistentVector) keyvals.conj(e.key());
+			keyvals = (IPersistentVector) keyvals.conj(e.val());
 			}
 		return keyvals;
 	}

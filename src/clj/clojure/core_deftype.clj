@@ -185,7 +185,7 @@
              (conj m 
                    `(count [this#] (+ ~(count base-fields) (count ~'__extmap)))
                    `(empty [this#] (throw (UnsupportedOperationException. (str "Can't create empty: " ~(str classname)))))
-                   `(cons [this# e#] ((var imap-cons) this# e#))
+                   `(conj [this# e#] ((var imap-cons) this# e#))
                    `(equiv [this# ~gs] 
                         (boolean 
                          (or (identical? this# ~gs)

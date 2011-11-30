@@ -24,7 +24,7 @@ public static PersistentHashSet create(Object... init){
 	PersistentHashSet ret = EMPTY;
 	for(int i = 0; i < init.length; i++)
 		{
-		ret = (PersistentHashSet) ret.cons(init[i]);
+		ret = (PersistentHashSet) ret.conj(init[i]);
 		}
 	return ret;
 }
@@ -33,7 +33,7 @@ public static PersistentHashSet create(List init){
 	PersistentHashSet ret = EMPTY;
 	for(Object key : init)
 		{
-		ret = (PersistentHashSet) ret.cons(key);
+		ret = (PersistentHashSet) ret.conj(key);
 		}
 	return ret;
 }
@@ -42,7 +42,7 @@ static public PersistentHashSet create(ISeq items){
 	PersistentHashSet ret = EMPTY;
 	for(; items != null; items = items.next())
 		{
-		ret = (PersistentHashSet) ret.cons(items.first());
+		ret = (PersistentHashSet) ret.conj(items.first());
 		}
 	return ret;
 }
@@ -51,7 +51,7 @@ public static PersistentHashSet createWithCheck(Object... init){
 	PersistentHashSet ret = EMPTY;
 	for(int i = 0; i < init.length; i++)
 		{
-		ret = (PersistentHashSet) ret.cons(init[i]);
+		ret = (PersistentHashSet) ret.conj(init[i]);
 		if(ret.count() != i + 1)
 			throw new IllegalArgumentException("Duplicate key: " + init[i]);
 		}
@@ -63,7 +63,7 @@ public static PersistentHashSet createWithCheck(List init){
 	int i=0;
 	for(Object key : init)
 		{
-		ret = (PersistentHashSet) ret.cons(key);
+		ret = (PersistentHashSet) ret.conj(key);
 		if(ret.count() != i + 1)
 			throw new IllegalArgumentException("Duplicate key: " + key);		
 		++i;
@@ -75,7 +75,7 @@ static public PersistentHashSet createWithCheck(ISeq items){
 	PersistentHashSet ret = EMPTY;
 	for(int i=0; items != null; items = items.next(), ++i)
 		{
-		ret = (PersistentHashSet) ret.cons(items.first());
+		ret = (PersistentHashSet) ret.conj(items.first());
 		if(ret.count() != i + 1)
 			throw new IllegalArgumentException("Duplicate key: " + items.first());
 		}
@@ -93,7 +93,7 @@ public IPersistentSet disjoin(Object key) {
 	return this;
 }
 
-public IPersistentSet cons(Object o){
+public IPersistentSet conj(Object o){
 	if(contains(o))
 		return this;
 	return new PersistentHashSet(meta(),impl.assoc(o,o));

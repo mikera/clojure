@@ -121,6 +121,10 @@ public ISeq cons(Object o){
 	return new Cons(o, this);
 }
 
+public IPersistentCollection conj (Object o) {
+	return cons(o);
+}
+
 public ISeq more(){
     ISeq s = next();
     if(s == null)

@@ -30,7 +30,7 @@ public static IFn creator = new RestFn(){
 			Object[] argsarray = (Object[]) ((ArraySeq) args).array;
 			IPersistentList ret = EMPTY;
 			for(int i = argsarray.length - 1; i >= 0; --i)
-				ret = (IPersistentList) ret.cons(argsarray[i]);
+				ret = (IPersistentList) ret.conj(argsarray[i]);
 			return ret;
 			}
 		LinkedList list = new LinkedList();
@@ -68,7 +68,7 @@ public static IPersistentList create(List init){
 	IPersistentList ret = EMPTY;
 	for(ListIterator i = init.listIterator(init.size()); i.hasPrevious();)
 		{
-		ret = (IPersistentList) ret.cons(i.previous());
+		ret = (IPersistentList) ret.conj(i.previous());
 		}
 	return ret;
 }
@@ -97,7 +97,7 @@ public int count(){
 	return _count;
 }
 
-public PersistentList cons(Object o){
+public PersistentList conj(Object o){
 	return new PersistentList(meta(), o, this, _count + 1);
 }
 
@@ -156,7 +156,11 @@ public Object reduce(IFn f, Object start) {
             return this;
         }
 
-        public PersistentList cons(Object o){
+        public PersistentList conj(Object o){
+		return new PersistentList(meta(), o, null, 1);
+	}
+        
+    public PersistentList cons(Object o){
 		return new PersistentList(meta(), o, null, 1);
 	}
 
