@@ -71,6 +71,15 @@
 	         (internal-reduce s f val))
 	       val)))
   
+  java.lang.String
+  (internal-reduce
+   [s f val]
+    (loop [i 0
+           val val]
+       (if (< i (.length s))
+         (recur (inc i) (f val (.charAt s i)))
+         val)))
+  
   java.lang.Object
   (internal-reduce
    [s f val]

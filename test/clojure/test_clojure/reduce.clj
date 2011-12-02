@@ -27,7 +27,7 @@
   (is (= 1 (reduce multiply 1 (char-array 0)))))
 
 (deftest test-map-reductions
-  ;reduce over a large map
+  ;reduce over a 100-element map
   (let [ms (zipmap (range 100) (range 100))]
     (is (= 4950 (reduce (fn [acc [k v]] (+ acc v)) 0 ms)))))
 
@@ -48,3 +48,6 @@
   (is (= 6 (reduce multiply [2 3])))
   (is (= 6 (reduce multiply '(2 3))))
   (is (= 6 (reduce multiply #{2 3}))))
+
+(deftest test-string-reductions
+  (is (= "Hello World" (reduce str "" "Hello World"))))
