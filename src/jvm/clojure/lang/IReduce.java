@@ -12,8 +12,6 @@
 
 package clojure.lang;
 
-public interface IReduce{
-Object reduce(IFn f) ;
-
-Object reduce(IFn f, Object start) ;
+public interface IReduce extends IReducible {
+	Object reduce(IFn f) ;
 }

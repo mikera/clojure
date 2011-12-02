@@ -13,19 +13,38 @@
   (:use clojure.test))
 
 ;; utility functions
-(defn times2 [x] (* 2 x))
+(defn multiply [x y] (* x y))
 
 (deftest test-nil-reduce
   ; reduce on nil does nothing
-  (is (= 1 (reduce times2 1 nil)))
+  (is (= 1 (reduce multiply 1 nil)))
   
-  ; reduce on empty collections do nothing
-  (is (= 1 (reduce times2 1 [])))
-  (is (= 1 (reduce times2 1 {})))
-  (is (= 1 (reduce times2 1 '())))
-  (is (= 1 (reduce times2 1 #{}))))
+  ; reduce on empty collections does nothing
+  (is (= 1 (reduce multiply 1 [])))
+  (is (= 1 (reduce multiply 1 {})))
+  (is (= 1 (reduce multiply 1 '())))
+  (is (= 1 (reduce multiply 1 #{})))
+  (is (= 1 (reduce multiply 1 (char-array 0)))))
 
 (deftest test-map-reductions
   ;reduce over a large map
   (let [ms (zipmap (range 100) (range 100))]
     (is (= 4950 (reduce (fn [acc [k v]] (+ acc v)) 0 ms)))))
+
+(deftest test-one-element-reductions
+  ; reduce on one-element collections produces unchanged value and does not all function
+  (is (= 2 (reduce multiply [2])))
+  (is (= 2 (reduce multiply '(2))))
+  (is (= 2 (reduce multiply #{2}))))
+
+(deftest test-one-element-reductions-initial-value
+  ; reduce on one-element collections with initial value applies function once
+  (is (= 6 (reduce multiply 3 [2])))
+  (is (= 6 (reduce multiply 3 '(2))))
+  (is (= 6 (reduce multiply 3 #{2}))))
+
+(deftest test-two-element-reductions
+  ; reduce on two-element collections applies function once
+  (is (= 6 (reduce multiply [2 3])))
+  (is (= 6 (reduce multiply '(2 3))))
+  (is (= 6 (reduce multiply #{2 3}))))
