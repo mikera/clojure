@@ -9,7 +9,7 @@
 (ns clojure.core.protocols)
 
 (defprotocol InternalReduce
-  "Protocol for concrete seq types that can reduce themselves
+  "Protocol for concrete types that can reduce themselves
    faster than first/next recursion. Called by clojure.core/reduce."
   (internal-reduce [seq f start]))
 
