@@ -16,8 +16,14 @@
 (extend-protocol InternalReduce
   nil
   (internal-reduce
-   [s f val]
-   val)
+    [s f val]
+    val)
+  
+  ;; handles reducible collection types
+  clojure.lang.IReducible
+  (internal-reduce
+    [s f val]
+    (.reduce s f val))
   
   ;; handles vectors and ranges
   clojure.lang.IChunkedSeq
