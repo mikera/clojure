@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
  Any errors are my own
  */
 
-public class PersistentHashMap extends APersistentMap implements IEditableCollection, IObj {
+public class PersistentHashMap extends APersistentMap implements IEditableCollection, IObj, IReducible {
 
 final int count;
 final INode root;
@@ -187,6 +187,10 @@ public ISeq seq(){
 	return hasNull ? new Cons(new MapEntry(null, nullValue), s) : s;
 }
 
+public Object reduce(IFn function, Object value) {
+	return root.reduce(function,value);
+}
+
 public IPersistentCollection empty(){
 	return EMPTY.withMeta(meta());	
 }
@@ -299,6 +303,8 @@ static final class TransientHashMap extends ATransientMap {
 
 static interface INode extends Serializable {
 	INode assoc(int shift, int hash, Object key, Object val, Box addedLeaf);
+
+	Object reduce(IFn function, Object value);
 
 	INode without(int shift, int hash, Object key);
 
@@ -475,6 +481,13 @@ final static class ArrayNode implements INode{
 			return create(null, nodes, i, s.next());
 		}
 		
+	}
+
+	public Object reduce(IFn function, Object value) {
+		for (int i=0; i<array.length; i++) {
+			value=array[i].reduce(function, value);
+		}
+ 		return value;
 	}
 }
 
@@ -717,6 +730,13 @@ final static class BitmapIndexedNode implements INode{
 		}
 		return this;
 	}
+
+	public Object reduce(IFn function, Object value) {
+		for (int i=0; i<array.length; i+=2) {
+			value=function.invoke(value, new MapEntry(array[i],array[i+1]));
+		}
+ 		return value;
+	}
 }
 
 final static class HashCollisionNode implements INode{
@@ -863,6 +883,13 @@ final static class HashCollisionNode implements INode{
 		editable.array[2*count-2] = editable.array[2*count-1] = null;
 		editable.count--;
 		return editable;
+	}
+
+	public Object reduce(IFn function, Object value) {
+		for (int i=0; i<count; i++) {
+			value=function.invoke(value,array[i]);
+		}
+ 		return value;
 	}
 }
 

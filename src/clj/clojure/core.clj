@@ -5995,8 +5995,7 @@
        (reduce f (first s) (next s))
        (f)))
   ([f val coll]
-     (let [s (seq coll)]
-       (clojure.core.protocols/internal-reduce s f val))))
+    (clojure.core.protocols/internal-reduce coll f val)))
 
 (defn into
   "Returns a new coll consisting of to-coll with all of the items of
