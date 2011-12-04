@@ -61,10 +61,10 @@
   (internal-reduce
    [s f val]
 	   (loop [cls (class s)
-	          s s
+	          s (seq s)
 	          f f
 	          val val]
-	     (if-let [s (seq s)]
+	     (if s
 	       ;; roll over to faster implementation if underlying seq changes type
 	       (if (identical? (class s) cls)
 	         (recur cls (next s) f (f val (first s)))
