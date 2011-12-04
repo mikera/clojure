@@ -15,8 +15,9 @@ package clojure.lang;
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import clojure.lang.ISeq;
 
-public class PersistentVector extends APersistentVector implements IObj, IEditableCollection{
+public class PersistentVector extends APersistentVector implements IObj, IEditableCollection {
 
 static class Node implements Serializable {
 	transient final AtomicReference<Thread> edit;
@@ -232,7 +233,7 @@ public ISeq seq(){
 	return chunkedSeq();
 }
 
-static public final class ChunkedSeq extends ASeq implements IChunkedSeq{
+static public final class ChunkedSeq extends ASeq implements IChunkedSeq, IReduce {
 
 	public final PersistentVector vec;
 	final Object[] node;
@@ -263,13 +264,13 @@ static public final class ChunkedSeq extends ASeq implements IChunkedSeq{
 
 	public IChunk chunkedFirst() {
 		return new ArrayChunk(node, offset);
-		}
+	}
 
-	public ISeq chunkedNext(){
+	public ChunkedSeq chunkedNext(){
 		if(i + node.length < vec.cnt)
 			return new ChunkedSeq(vec,i+ node.length,0);
 		return null;
-		}
+	}
 
 	public ISeq chunkedMore(){
 		ISeq s = chunkedNext();
@@ -292,6 +293,30 @@ static public final class ChunkedSeq extends ASeq implements IChunkedSeq{
 		if(offset + 1 < node.length)
 			return new ChunkedSeq(vec, node, i, offset + 1);
 		return chunkedNext();
+	}
+
+	public Object reduce(IFn f) {
+		Object val=node[offset];
+		
+		for (int j=offset+1; j<node.length; j++) {
+			val=f.invoke(val,node[j]);
+		}
+		
+		ISeq next=chunkedNext();
+		if (next!=null) val=RT.reduce(next, f, val);
+		return val;
+	}
+	
+	public Object reduce(IFn f, Object start) {
+		Object val=start;
+		
+		for (int j=offset; j<node.length; j++) {
+			val=f.invoke(val,node[j]);
+		}
+		
+		ISeq next=chunkedNext();
+		if (next!=null) val=RT.reduce(next, f, val);
+		return val;
 	}
 }
 

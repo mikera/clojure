@@ -50,4 +50,7 @@
   (is (= 6 (reduce multiply #{2 3}))))
 
 (deftest test-string-reductions
-  (is (= "Hello World" (reduce str "" "Hello World"))))
+  (is (= "Hello World" (reduce str "" "Hello World")))
+  (is (= \a (reduce (fn [] :shouldnt-happen) "a")))
+  (is (= :ok (reduce (fn [] :shouldnt-happen) :ok "")))
+  (is (= :ok (reduce (fn [] :ok) ""))))

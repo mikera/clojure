@@ -12,7 +12,7 @@
 
 package clojure.lang;
 
-public class StringSeq extends ASeq implements IndexedSeq{
+public class StringSeq extends ASeq implements IndexedSeq, IReduce{
 public final CharSequence s;
 public final int i;
 
@@ -50,5 +50,24 @@ public int index(){
 
 public int count(){
 	return s.length() - i;
+}
+
+public Object reduce(IFn f) {
+	int length=s.length();
+	if (i>=length) return f.invoke();
+	Object val=s.charAt(i);
+	for (int j=i+1; j<length; j++ ) {
+		val=f.invoke(val,s.charAt(j));
+	}
+	return val;
+}
+
+public Object reduce(IFn f, Object start) {
+	int length=s.length();
+	Object val=start;
+	for (int j=i; j<length; j++ ) {
+		val=f.invoke(val,s.charAt(j));
+	}
+	return val;
 }
 }

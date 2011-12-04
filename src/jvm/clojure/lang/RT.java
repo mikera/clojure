@@ -1685,6 +1685,44 @@ static public Object readString(String s){
 	}
 }
 
+static public Object reduce(Object s, IFn f) {
+	if (s==null) return f.invoke();
+	if (s instanceof IReduce)
+		return ((IReduce)s).reduce(f);
+	if (s instanceof ISeq) {
+		ISeq seq=(ISeq)s;
+		Object val=seq.first();
+		while (seq!=null) {
+			seq=seq.next();
+			if (seq instanceof IReduce) {
+				return ((IReduce)seq).reduce(f,val);
+			}
+			val=f.invoke(val,seq.first());
+		}
+		return val;
+	}
+	throw new IllegalArgumentException("RT.reduce() requires an IReduce or ISeq");
+}
+
+static public Object reduce(Object s, IFn f, Object start) {
+	if (s==null) return start;
+	if (s instanceof IReduce)
+		return ((IReduce)s).reduce(f,start);
+	if (s instanceof ISeq) {
+		Object val=start;
+		ISeq seq=((ISeq)s).next();
+		while (seq!=null) {
+			val=f.invoke(val,seq.first());
+			seq=seq.next();
+			if (seq instanceof IReduce) {
+				return ((IReduce)seq).reduce(f,val);
+			}
+		}
+		return val;
+	}	
+	throw new IllegalArgumentException("RT.reduce() requires an IReduce or ISeq");
+}
+
 static public void print(Object x, Writer w) throws IOException{
 	//call multimethod
 	if(PRINT_INITIALIZED.isBound() && RT.booleanCast(PRINT_INITIALIZED.deref()))

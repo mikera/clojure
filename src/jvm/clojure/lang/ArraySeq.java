@@ -14,7 +14,7 @@ package clojure.lang;
 
 import java.lang.reflect.Array;
 
-public class ArraySeq extends ASeq implements IndexedSeq, IReduce{
+public class ArraySeq extends ASeq implements IndexedSeq, IReduce {
 public final Object array;
 final int i;
 final Object[] oa;
