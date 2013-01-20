@@ -133,7 +133,7 @@ Usage: *hello*
                 `[(with-out-str
                     (with-pprint-dispatch code-dispatch
                       (pprint (read-string ~block))))
-                  (str ~block "\n")]))))
+                  ~block]))))
 
 (code-block code-block-tests
   "(defn cl-format
@@ -143,7 +143,8 @@ Usage: *hello*
                           (compile-format format-in)
                           format-in)
         navigator (init-navigator args)]
-    (execute-format stream compiled-format navigator)))"
+    (execute-format stream compiled-format navigator)))
+"
 
  "(defn pprint-defn [writer alis]
   (if (next alis)
@@ -168,22 +169,24 @@ Usage: *hello*
                                     stuff
                                     (or doc-str attr-map))
           :else (multi-defn stuff (or doc-str attr-map)))))
-    (pprint-simple-code-list writer alis)))")
+    (pprint-simple-code-list writer alis)))
+")
 
 (code-block ns-macro-test
   "(ns slam.hound.stitch
-  (:use [slam.hound.prettify :only [prettify]]))"
+  (:use [slam.hound.prettify :only [prettify]]))
+"
   
   "(ns slam.hound.prettify
   \"Format a namespace declaration using pretty print with custom dispatch.\"
   (:use [clojure.pprint :only [cl-format code-dispatch formatter-out
                                pprint pprint-logical-block
                                pprint-newline with-pprint-dispatch
-                               write-out]]))"
+                               write-out]]))
+"
 
   "(ns autodoc.build-html
-  \"This is the namespace that builds the HTML pages themselves.
-It is implemented with a number of custom enlive templates.\"
+  \"This is the namespace that builds the HTML pages themselves.  It is implemented with a number of custom enlive templates.\"
   {:skip-wiki true, :author \"Tom Faulhaber\"}
   (:refer-clojure :exclude [empty complement])
   (:import [java.util.jar JarFile]
@@ -202,7 +205,8 @@ It is implemented with a number of custom enlive templates.\"
         [autodoc.collect-info :only (contrib-info)]
         [autodoc.params :only (params expand-classpath)])
   (:use clojure.set clojure.java.io clojure.data clojure.java.browse
-        clojure.inspector clojure.zip clojure.stacktrace))")
+        clojure.inspector clojure.zip clojure.stacktrace))
+")
 
 (defn tst-pprint
   "A helper function to pprint to a string with a restricted right margin"
