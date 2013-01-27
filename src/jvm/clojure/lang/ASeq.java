@@ -34,17 +34,7 @@ protected ASeq(){
 }
 
 public boolean equiv(Object obj){
-
-	if(!(obj instanceof Sequential || obj instanceof List))
-		return false;
-	ISeq ms = RT.seq(obj);
-	for(ISeq s = seq(); s != null; s = s.next(), ms = ms.next())
-		{
-		if(ms == null || !Util.equiv(s.first(), ms.first()))
-			return false;
-		}
-	return ms == null;
-
+	return equals(obj);
 }
 
 public boolean equals(Object obj){
@@ -54,11 +44,10 @@ public boolean equals(Object obj){
 	ISeq ms = RT.seq(obj);
 	for(ISeq s = seq(); s != null; s = s.next(), ms = ms.next())
 		{
-		if(ms == null || !Util.equals(s.first(), ms.first()))
+		if(ms == null || !Util.equiv(s.first(), ms.first()))
 			return false;
 		}
 	return ms == null;
-
 }
 
 public int hashCode(){
