@@ -3418,7 +3418,9 @@ static class InvokeExpr implements Expr{
 		this.column = column;
 		
 		if (!possiblyIFn(fexpr)) {
-			throw new IllegalArgumentException("Cannot invoke an expression that is not a function.");
+			Class c=(fexpr.hasJavaClass()?fexpr.getJavaClass():null);
+			throw new IllegalArgumentException("Cannot invoke an expression that is not a function"
+								+((c==null)?"":(", found: "+c.getCanonicalName())));
 		}
 		
 		if(fexpr instanceof VarExpr)
