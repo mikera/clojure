@@ -3398,6 +3398,10 @@ static class InvokeExpr implements Expr{
 	public java.lang.reflect.Method onMethod;
 	static Keyword onKey = Keyword.intern("on");
 	static Keyword methodMapKey = Keyword.intern("method-map");
+	
+	private static final boolean possiblyIFn(Expr exp) {
+		return true;
+	}
 
 	public InvokeExpr(String source, int line, int column, Symbol tag, Expr fexpr, IPersistentVector args) {
 		this.source = source;
@@ -3405,6 +3409,11 @@ static class InvokeExpr implements Expr{
 		this.args = args;
 		this.line = line;
 		this.column = column;
+		
+		if (!possiblyIFn(fexpr)) {
+			throw new IllegalArgumentException("Cannot invoke an expression that is not a function.");
+		}
+		
 		if(fexpr instanceof VarExpr)
 			{
 			Var fvar = ((VarExpr)fexpr).var;
