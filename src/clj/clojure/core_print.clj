@@ -88,9 +88,13 @@
   (.write w ")"))
 
 (defn- print-object [o, ^Writer w]
+  (when (instance? clojure.lang.IMeta o)
+    (print-meta o w))
   (.write w "#<")
-  (.write w (.getSimpleName (class o)))
-  (.write w " ")
+  (let [name (.getSimpleName (class o))]
+    (when (seq name) ;; anonymous classes have a simple name of ""
+      (.write w name)
+      (.write w " ")))
   (.write w (str o))
   (.write w ">"))
 
@@ -380,7 +384,8 @@
                                      (agent-error o))
                               " FAILED"
                               ""))
-                    pr-on, "", ">", (list (if (and (instance? clojure.lang.IPending o) (not (.isRealized o)))
+                    pr-on, "", ">", (list (if (and (instance? clojure.lang.IPending o)
+                                                   (not (.isRealized ^clojure.lang.IPending o)))
                                             :pending
                                             @o)), w))
 
