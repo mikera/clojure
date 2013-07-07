@@ -3399,7 +3399,14 @@ static class InvokeExpr implements Expr{
 	static Keyword onKey = Keyword.intern("on");
 	static Keyword methodMapKey = Keyword.intern("method-map");
 	
+	/**
+	 * Returns false if exp cannot possibly be an instance of clojure.lang.IFn
+	 */
 	private static final boolean possiblyIFn(Expr exp) {
+		if (exp instanceof MaybePrimitiveExpr) {
+			MaybePrimitiveExpr mpexp=(MaybePrimitiveExpr)exp;
+			if (mpexp.canEmitPrimitive()) return false;
+		}
 		return true;
 	}
 
