@@ -3407,6 +3407,16 @@ static class InvokeExpr implements Expr{
 			MaybePrimitiveExpr mpexp=(MaybePrimitiveExpr)exp;
 			if (mpexp.canEmitPrimitive()) return false;
 		}
+		if (exp instanceof VarExpr) {
+			// A var could contain a function
+			// TODO: figure out if var is possibly a function from metadata?
+			return true;
+		}
+		if (exp.hasJavaClass()) {
+			Class c=exp.getJavaClass();
+			// this check only works on final classes, because a subclass could implement IFn
+			if ((Modifier.isFinal(c.getModifiers()))&&(!IFn.class.isAssignableFrom(c))) return false;
+		}
 		return true;
 	}
 
