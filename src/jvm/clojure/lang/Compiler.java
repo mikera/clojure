@@ -3429,8 +3429,8 @@ static class InvokeExpr implements Expr{
 		
 		if (!possiblyIFn(fexpr)) {
 			Class c=(fexpr.hasJavaClass()?fexpr.getJavaClass():null);
-			throw new IllegalArgumentException("Cannot invoke an expression that is not a function"
-								+((c==null)?"":(", found: "+c.getCanonicalName())));
+			throw new IllegalArgumentException("Function invocation not possible"
+								+((c==null)?"":(": "+c.getCanonicalName()+" cannot be cast to a function")));
 		}
 		
 		if(fexpr instanceof VarExpr)
