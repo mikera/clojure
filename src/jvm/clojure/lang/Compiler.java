@@ -44,6 +44,7 @@ static final Symbol LET = Symbol.intern("let*");
 static final Symbol LETFN = Symbol.intern("letfn*");
 static final Symbol DO = Symbol.intern("do");
 static final Symbol FN = Symbol.intern("fn*");
+static final Symbol FNONCE = (Symbol) Symbol.intern("fn*").withMeta(RT.map(Keyword.intern(null, "once"), RT.T));
 static final Symbol QUOTE = Symbol.intern("quote");
 static final Symbol THE_VAR = Symbol.intern("var");
 static final Symbol DOT = Symbol.intern(".");
@@ -265,10 +266,21 @@ static Object elideMeta(Object m){
 
 //Integer
 static final public Var LINE = Var.create(0).setDynamic();
+static final public Var COLUMN = Var.create(0).setDynamic();
+
+static int lineDeref(){
+	return ((Number)LINE.deref()).intValue();
+}
+
+static int columnDeref(){
+	return ((Number)COLUMN.deref()).intValue();
+}
 
 //Integer
 static final public Var LINE_BEFORE = Var.create(0).setDynamic();
+static final public Var COLUMN_BEFORE = Var.create(0).setDynamic();
 static final public Var LINE_AFTER = Var.create(0).setDynamic();
+static final public Var COLUMN_AFTER = Var.create(0).setDynamic();
 
 //Integer
 static final public Var NEXT_LOCAL_NUM = Var.create(0).setDynamic();
@@ -297,6 +309,9 @@ static final public Var CLEAR_SITES = Var.create(null).setDynamic();
 	EVAL
 }
 
+private class Recur {};
+static final public Class RECUR_CLASS = Recur.class;
+    
 interface Expr{
 	Object eval() ;
 
@@ -359,15 +374,17 @@ static class DefExpr implements Expr{
 	public final boolean isDynamic;
 	public final String source;
 	public final int line;
+	public final int column;
 	final static Method bindRootMethod = Method.getMethod("void bindRoot(Object)");
 	final static Method setTagMethod = Method.getMethod("void setTag(clojure.lang.Symbol)");
 	final static Method setMetaMethod = Method.getMethod("void setMeta(clojure.lang.IPersistentMap)");
 	final static Method setDynamicMethod = Method.getMethod("clojure.lang.Var setDynamic(boolean)");
 	final static Method symintern = Method.getMethod("clojure.lang.Symbol intern(String, String)");
 
-	public DefExpr(String source, int line, Var var, Expr init, Expr meta, boolean initProvided, boolean isDynamic){
+	public DefExpr(String source, int line, int column, Var var, Expr init, Expr meta, boolean initProvided, boolean isDynamic){
 		this.source = source;
 		this.line = line;
+		this.column = column;
 		this.var = var;
 		this.init = init;
 		this.meta = meta;
@@ -381,7 +398,8 @@ static class DefExpr implements Expr{
                 Keyword k  = ((KeywordExpr) expr.keyvals.nth(i)).k;
                 if ((k != RT.FILE_KEY) &&
                     (k != RT.DECLARED_KEY) &&
-                    (k != RT.LINE_KEY))
+                    (k != RT.LINE_KEY) &&
+                    (k != RT.COLUMN_KEY))
                     return true;
             }
         return false;
@@ -408,7 +426,7 @@ static class DefExpr implements Expr{
 		catch(Throwable e)
 			{
 			if(!(e instanceof CompilerException))
-				throw new CompilerException(source, line, e);
+				throw new CompilerException(source, line, column, e);
 			else
 				throw (CompilerException) e;
 			}
@@ -502,20 +520,21 @@ static class DefExpr implements Expr{
 				}
             Object source_path = SOURCE_PATH.get();
             source_path = source_path == null ? "NO_SOURCE_FILE" : source_path;
-            mm = (IPersistentMap) RT.assoc(mm, RT.LINE_KEY, LINE.get()).assoc(RT.FILE_KEY, source_path);
+            mm = (IPersistentMap) RT.assoc(mm, RT.LINE_KEY, LINE.get()).assoc(RT.COLUMN_KEY, COLUMN.get()).assoc(RT.FILE_KEY, source_path);
 			if (docstring != null)
 			  mm = (IPersistentMap) RT.assoc(mm, RT.DOC_KEY, docstring);
 //			mm = mm.without(RT.DOC_KEY)
 //					.without(Keyword.intern(null, "arglists"))
 //					.without(RT.FILE_KEY)
 //					.without(RT.LINE_KEY)
+//					.without(RT.COLUMN_KEY)
 //					.without(Keyword.intern(null, "ns"))
 //					.without(Keyword.intern(null, "name"))
 //					.without(Keyword.intern(null, "added"))
 //					.without(Keyword.intern(null, "static"));
             mm = (IPersistentMap) elideMeta(mm);
 			Expr meta = mm.count()==0 ? null:analyze(context == C.EVAL ? context : C.EXPRESSION, mm);
-			return new DefExpr((String) SOURCE.deref(), (Integer) LINE.deref(),
+			return new DefExpr((String) SOURCE.deref(), lineDeref(), columnDeref(),
 			                   v, analyze(context == C.EVAL ? context : C.EXPRESSION, RT.third(form), v.sym.name),
 			                   meta, RT.count(form) == 3, isDynamic);
 		}
@@ -894,7 +913,8 @@ static public abstract class HostExpr implements Expr, MaybePrimitiveExpr{
 				throw new IllegalArgumentException("Malformed member expression, expecting (. target member ...)");
 			//determine static or instance
 			//static target must be symbol, either fully.qualified.Classname or Classname that has been imported
-			int line = (Integer) LINE.deref();
+			int line = lineDeref();
+			int column = columnDeref();
 			String source = (String) SOURCE.deref();
 			Class c = maybeClass(RT.second(form), false);
 			//at this point c will be non-null if static
@@ -920,9 +940,9 @@ static public abstract class HostExpr implements Expr, MaybePrimitiveExpr{
 						:(Symbol) RT.third(form);
 				Symbol tag = tagOf(form);
 				if(c != null) {
-					return new StaticFieldExpr(line, c, munge(sym.name), tag);
+					return new StaticFieldExpr(line, column, c, munge(sym.name), tag);
 				} else
-					return new InstanceFieldExpr(line, instance, munge(sym.name), tag);
+					return new InstanceFieldExpr(line, column, instance, munge(sym.name), tag);
 				}
 			else
 				{
@@ -935,9 +955,9 @@ static public abstract class HostExpr implements Expr, MaybePrimitiveExpr{
 				for(ISeq s = RT.next(call); s != null; s = s.next())
 					args = args.cons(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
 				if(c != null)
-					return new StaticMethodExpr(source, line, tag, c, munge(sym.name), args);
+					return new StaticMethodExpr(source, line, column, tag, c, munge(sym.name), args);
 				else
-					return new InstanceMethodExpr(source, line, tag, instance, munge(sym.name), args);
+					return new InstanceMethodExpr(source, line, column, tag, instance, munge(sym.name), args);
 				}
 		}
 	}
@@ -1058,23 +1078,25 @@ static class InstanceFieldExpr extends FieldExpr implements AssignableExpr{
 	public final java.lang.reflect.Field field;
 	public final String fieldName;
 	public final int line;
+	public final int column;
 	public final Symbol tag;
 	final static Method invokeNoArgInstanceMember = Method.getMethod("Object invokeNoArgInstanceMember(Object,String)");
 	final static Method setInstanceFieldMethod = Method.getMethod("Object setInstanceField(Object,String,Object)");
 
 
-	public InstanceFieldExpr(int line, Expr target, String fieldName, Symbol tag) {
+	public InstanceFieldExpr(int line, int column, Expr target, String fieldName, Symbol tag) {
 		this.target = target;
 		this.targetClass = target.hasJavaClass() ? target.getJavaClass() : null;
 		this.field = targetClass != null ? Reflector.getField(targetClass, fieldName, false) : null;
 		this.fieldName = fieldName;
 		this.line = line;
+		this.column = column;
 		this.tag = tag;
 		if(field == null && RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
 			{
 			RT.errPrintWriter()
-		      .format("Reflection warning, %s:%d - reference to field %s can't be resolved.\n",
-					  SOURCE_PATH.deref(), line, fieldName);
+		      .format("Reflection warning, %s:%d:%d - reference to field %s can't be resolved.\n",
+					  SOURCE_PATH.deref(), line, column, fieldName);
 			}
 	}
 
@@ -1168,11 +1190,13 @@ static class StaticFieldExpr extends FieldExpr implements AssignableExpr{
 //	final static Method getStaticFieldMethod = Method.getMethod("Object getStaticField(String,String)");
 //	final static Method setStaticFieldMethod = Method.getMethod("Object setStaticField(String,String,Object)");
 	final int line;
+	final int column;
 
-	public StaticFieldExpr(int line, Class c, String fieldName, Symbol tag) {
+	public StaticFieldExpr(int line, int column, Class c, String fieldName, Symbol tag) {
 		//this.className = className;
 		this.fieldName = fieldName;
 		this.line = line;
+		this.column = column;
 		//c = Class.forName(className);
 		this.c = c;
 		try
@@ -1357,6 +1381,7 @@ static class InstanceMethodExpr extends MethodExpr{
 	public final IPersistentVector args;
 	public final String source;
 	public final int line;
+	public final int column;
 	public final Symbol tag;
 	public final java.lang.reflect.Method method;
 
@@ -1364,10 +1389,11 @@ static class InstanceMethodExpr extends MethodExpr{
 			Method.getMethod("Object invokeInstanceMethod(Object,String,Object[])");
 
 
-	public InstanceMethodExpr(String source, int line, Symbol tag, Expr target, String methodName, IPersistentVector args)
+	public InstanceMethodExpr(String source, int line, int column, Symbol tag, Expr target, String methodName, IPersistentVector args)
 			{
 		this.source = source;
 		this.line = line;
+		this.column = column;
 		this.args = args;
 		this.methodName = methodName;
 		this.target = target;
@@ -1409,8 +1435,8 @@ static class InstanceMethodExpr extends MethodExpr{
 		if(method == null && RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
 			{
 			RT.errPrintWriter()
-		      .format("Reflection warning, %s:%d - call to %s can't be resolved.\n",
-					  SOURCE_PATH.deref(), line, methodName);
+		      .format("Reflection warning, %s:%d:%d - call to %s can't be resolved.\n",
+					  SOURCE_PATH.deref(), line, column, methodName);
 			}
 	}
 
@@ -1432,7 +1458,7 @@ static class InstanceMethodExpr extends MethodExpr{
 		catch(Throwable e)
 			{
 			if(!(e instanceof CompilerException))
-				throw new CompilerException(source, line, e);
+				throw new CompilerException(source, line, column, e);
 			else
 				throw (CompilerException) e;
 			}
@@ -1521,6 +1547,7 @@ static class StaticMethodExpr extends MethodExpr{
 	public final IPersistentVector args;
 	public final String source;
 	public final int line;
+	public final int column;
 	public final java.lang.reflect.Method method;
 	public final Symbol tag;
 	final static Method forNameMethod = Method.getMethod("Class forName(String)");
@@ -1528,13 +1555,14 @@ static class StaticMethodExpr extends MethodExpr{
 			Method.getMethod("Object invokeStaticMethod(Class,String,Object[])");
 
 
-	public StaticMethodExpr(String source, int line, Symbol tag, Class c, String methodName, IPersistentVector args)
+	public StaticMethodExpr(String source, int line, int column, Symbol tag, Class c, String methodName, IPersistentVector args)
 			{
 		this.c = c;
 		this.methodName = methodName;
 		this.args = args;
 		this.source = source;
 		this.line = line;
+		this.column = column;
 		this.tag = tag;
 
 		List methods = Reflector.getMethods(c, args.count(), methodName, true);
@@ -1558,8 +1586,8 @@ static class StaticMethodExpr extends MethodExpr{
 		if(method == null && RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
 			{
 			RT.errPrintWriter()
-              .format("Reflection warning, %s:%d - call to %s can't be resolved.\n",
-                      SOURCE_PATH.deref(), line, methodName);
+              .format("Reflection warning, %s:%d:%d - call to %s can't be resolved.\n",
+                      SOURCE_PATH.deref(), line, column, methodName);
 			}
 	}
 
@@ -1580,7 +1608,7 @@ static class StaticMethodExpr extends MethodExpr{
 		catch(Throwable e)
 			{
 			if(!(e instanceof CompilerException))
-				throw new CompilerException(source, line, e);
+				throw new CompilerException(source, line, column, e);
 			else
 				throw (CompilerException) e;
 			}
@@ -2104,7 +2132,7 @@ public static class TryExpr implements Expr{
 			ISeq form = (ISeq) frm;
 //			if(context == C.EVAL || context == C.EXPRESSION)
 			if(context != C.RETURN)
-				return analyze(context, RT.list(RT.list(FN, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
 
 			//(try try-expr* catch-expr* finally-expr?)
 			//catch-expr: (catch class sym expr*)
@@ -2133,7 +2161,7 @@ public static class TryExpr implements Expr{
                                             if(bodyExpr == null)
                                                 try {
                                                     Var.pushThreadBindings(RT.map(NO_RECUR, true));
-						    bodyExpr = (new BodyExpr.Parser()).parse(C.EXPRESSION, RT.seq(body));
+						                            bodyExpr = (new BodyExpr.Parser()).parse(context, RT.seq(body));
                                                 } finally {
                                                     Var.popThreadBindings();
                                                 }
@@ -2280,7 +2308,7 @@ static class ThrowExpr extends UntypedExpr{
 	static class Parser implements IParser{
 		public Expr parse(C context, Object form) {
 			if(context == C.EVAL)
-				return analyze(context, RT.list(RT.list(FN, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
 			return new ThrowExpr(analyze(C.EXPRESSION, RT.second(form)));
 		}
 	}
@@ -2372,7 +2400,7 @@ public static class NewExpr implements Expr{
 	final static Method forNameMethod = Method.getMethod("Class forName(String)");
 
 
-	public NewExpr(Class c, IPersistentVector args, int line) {
+	public NewExpr(Class c, IPersistentVector args, int line, int column) {
 		this.args = args;
 		this.c = c;
 		Constructor[] allctors = c.getConstructors();
@@ -2402,8 +2430,8 @@ public static class NewExpr implements Expr{
 		if(ctor == null && RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
 			{
 			RT.errPrintWriter()
-              .format("Reflection warning, %s:%d - call to %s ctor can't be resolved.\n",
-                      SOURCE_PATH.deref(), line, c.getName());
+              .format("Reflection warning, %s:%d:%d - call to %s ctor can't be resolved.\n",
+                      SOURCE_PATH.deref(), line, column, c.getName());
 			}
 	}
 
@@ -2465,7 +2493,8 @@ public static class NewExpr implements Expr{
 
 	static class Parser implements IParser{
 		public Expr parse(C context, Object frm) {
-			int line = (Integer) LINE.deref();
+			int line = lineDeref();
+			int column = columnDeref();
 			ISeq form = (ISeq) frm;
 			//(new Classname args...)
 			if(form.count() < 2)
@@ -2476,7 +2505,7 @@ public static class NewExpr implements Expr{
 			PersistentVector args = PersistentVector.EMPTY;
 			for(ISeq s = RT.next(RT.next(form)); s != null; s = s.next())
 				args = args.cons(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
-			return new NewExpr(c, args, line);
+			return new NewExpr(c, args, line, column);
 		}
 	}
 
@@ -2524,13 +2553,15 @@ public static class IfExpr implements Expr, MaybePrimitiveExpr{
 	public final Expr thenExpr;
 	public final Expr elseExpr;
 	public final int line;
+	public final int column;
 
 
-	public IfExpr(int line, Expr testExpr, Expr thenExpr, Expr elseExpr){
+	public IfExpr(int line, int column, Expr testExpr, Expr thenExpr, Expr elseExpr){
 		this.testExpr = testExpr;
 		this.thenExpr = thenExpr;
 		this.elseExpr = elseExpr;
 		this.line = line;
+		this.column = column;
 	}
 
 	public Object eval() {
@@ -2599,6 +2630,8 @@ public static class IfExpr implements Expr, MaybePrimitiveExpr{
 		       && elseExpr.hasJavaClass()
 		       &&
 		       (thenExpr.getJavaClass() == elseExpr.getJavaClass()
+		        || thenExpr.getJavaClass() == RECUR_CLASS
+				|| elseExpr.getJavaClass() == RECUR_CLASS		        
 		        || (thenExpr.getJavaClass() == null && !elseExpr.getJavaClass().isPrimitive())
 		        || (elseExpr.getJavaClass() == null && !thenExpr.getJavaClass().isPrimitive()));
 	}
@@ -2608,7 +2641,9 @@ public static class IfExpr implements Expr, MaybePrimitiveExpr{
 			{
 			return thenExpr instanceof MaybePrimitiveExpr
 			       && elseExpr instanceof MaybePrimitiveExpr
-			       && thenExpr.getJavaClass() == elseExpr.getJavaClass()
+			       && (thenExpr.getJavaClass() == elseExpr.getJavaClass()
+			           || thenExpr.getJavaClass() == RECUR_CLASS
+			           || elseExpr.getJavaClass() == RECUR_CLASS)
 			       && ((MaybePrimitiveExpr)thenExpr).canEmitPrimitive()
 				   && ((MaybePrimitiveExpr)elseExpr).canEmitPrimitive();
 			}
@@ -2620,7 +2655,7 @@ public static class IfExpr implements Expr, MaybePrimitiveExpr{
 
 	public Class getJavaClass() {
 		Class thenClass = thenExpr.getJavaClass();
-		if(thenClass != null)
+		if(thenClass != null && thenClass != RECUR_CLASS)
 			return thenClass;
 		return elseExpr.getJavaClass();
 	}
@@ -2652,7 +2687,8 @@ public static class IfExpr implements Expr, MaybePrimitiveExpr{
             finally{
                 Var.popThreadBindings();
                 }
-			return new IfExpr((Integer) LINE.deref(),
+			return new IfExpr(lineDeref(),
+                              columnDeref(),
 			                  testexpr,
 			                  thenexpr,
 			                  elseexpr);
@@ -2788,6 +2824,7 @@ public static class ListExpr implements Expr{
 public static class MapExpr implements Expr{
 	public final IPersistentVector keyvals;
 	final static Method mapMethod = Method.getMethod("clojure.lang.IPersistentMap map(Object[])");
+	final static Method mapUniqueKeysMethod = Method.getMethod("clojure.lang.IPersistentMap mapUniqueKeys(Object[])");
 
 
 	public MapExpr(IPersistentVector keyvals){
@@ -2802,8 +2839,28 @@ public static class MapExpr implements Expr{
 	}
 
 	public void emit(C context, ObjExpr objx, GeneratorAdapter gen){
+		boolean allKeysConstant = true;
+		boolean allConstantKeysUnique = true;
+		IPersistentSet constantKeys = PersistentHashSet.EMPTY;
+		for(int i = 0; i < keyvals.count(); i+=2)
+			{
+			Expr k = (Expr) keyvals.nth(i);
+			if(k instanceof LiteralExpr)
+				{
+				Object kval = k.eval();
+				if (constantKeys.contains(kval))
+					allConstantKeysUnique = false;
+				else
+					constantKeys = (IPersistentSet)constantKeys.cons(kval);
+				}
+			else
+				allKeysConstant = false;
+			}
 		MethodExpr.emitArgsAsArray(keyvals, objx, gen);
-		gen.invokeStatic(RT_TYPE, mapMethod);
+		if((allKeysConstant && allConstantKeysUnique) || (keyvals.count() <= 2))
+			gen.invokeStatic(RT_TYPE, mapUniqueKeysMethod);
+		else
+			gen.invokeStatic(RT_TYPE, mapMethod);
 		if(context == C.STATEMENT)
 			gen.pop();
 	}
@@ -2819,7 +2876,10 @@ public static class MapExpr implements Expr{
 
 	static public Expr parse(C context, IPersistentMap form) {
 		IPersistentVector keyvals = PersistentVector.EMPTY;
-		boolean constant = true;
+		boolean keysConstant = true;
+		boolean valsConstant = true;
+		boolean allConstantKeysUnique = true;
+		IPersistentSet constantKeys = PersistentHashSet.EMPTY;
 		for(ISeq s = RT.seq(form); s != null; s = s.next())
 			{
 			IMapEntry e = (IMapEntry) s.first();
@@ -2827,23 +2887,41 @@ public static class MapExpr implements Expr{
 			Expr v = analyze(context == C.EVAL ? context : C.EXPRESSION, e.val());
 			keyvals = (IPersistentVector) keyvals.cons(k);
 			keyvals = (IPersistentVector) keyvals.cons(v);
-			if(!(k instanceof LiteralExpr && v instanceof LiteralExpr))
-				constant = false;
+			if(k instanceof LiteralExpr)
+				{
+				Object kval = k.eval();
+				if (constantKeys.contains(kval))
+					allConstantKeysUnique = false;
+				else
+					constantKeys = (IPersistentSet)constantKeys.cons(kval);
+				}
+			else
+				keysConstant = false;
+			if(!(v instanceof LiteralExpr))
+				valsConstant = false;
 			}
 
 		Expr ret = new MapExpr(keyvals);
 		if(form instanceof IObj && ((IObj) form).meta() != null)
 			return new MetaExpr(ret, MapExpr
 					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
-		else if(constant)
+		else if(keysConstant)
 			{
-			IPersistentMap m = PersistentHashMap.EMPTY;
-			for(int i=0;i<keyvals.length();i+= 2)
+			// TBD: Add more detail to exception thrown below.
+			if(!allConstantKeysUnique)
+				throw new IllegalArgumentException("Duplicate constant keys in map");
+			if(valsConstant)
 				{
-				m = m.assoc(((LiteralExpr)keyvals.nth(i)).val(), ((LiteralExpr)keyvals.nth(i+1)).val());
+				IPersistentMap m = PersistentHashMap.EMPTY;
+				for(int i=0;i<keyvals.length();i+= 2)
+					{
+					m = m.assoc(((LiteralExpr)keyvals.nth(i)).val(), ((LiteralExpr)keyvals.nth(i+1)).val());
+					}
+//				System.err.println("Constant: " + m);
+				return new ConstantExpr(m);
 				}
-//			System.err.println("Constant: " + m);
-			return new ConstantExpr(m);
+			else
+				return ret;
 			}
 		else
 			return ret;
@@ -2982,15 +3060,17 @@ static class KeywordInvokeExpr implements Expr{
 	public final Object tag;
 	public final Expr target;
 	public final int line;
+	public final int column;
 	public final int siteIndex;
 	public final String source;
 	static Type ILOOKUP_TYPE = Type.getType(ILookup.class);
 
-	public KeywordInvokeExpr(String source, int line, Symbol tag, KeywordExpr kw, Expr target){
+	public KeywordInvokeExpr(String source, int line, int column, Symbol tag, KeywordExpr kw, Expr target){
 		this.source = source;
 		this.kw = kw;
 		this.target = target;
 		this.line = line;
+		this.column = column;
 		this.tag = tag;
 		this.siteIndex = registerKeywordCallsite(kw.k);
 	}
@@ -3003,7 +3083,7 @@ static class KeywordInvokeExpr implements Expr{
 		catch(Throwable e)
 			{
 			if(!(e instanceof CompilerException))
-				throw new CompilerException(source, line, e);
+				throw new CompilerException(source, line, column, e);
 			else
 				throw (CompilerException) e;
 			}
@@ -3056,13 +3136,15 @@ static class KeywordInvokeExpr implements Expr{
 //	public final Object tag;
 //	public final Expr target;
 //	public final int line;
+//	public final int column;
 //	public final String source;
 //
-//	public KeywordSiteInvokeExpr(String source, int line, Symbol tag, Expr site, Expr target){
+//	public KeywordSiteInvokeExpr(String source, int line, int column, Symbol tag, Expr site, Expr target){
 //		this.source = source;
 //		this.site = site;
 //		this.target = target;
 //		this.line = line;
+//		this.column = column;
 //		this.tag = tag;
 //	}
 //
@@ -3075,7 +3157,7 @@ static class KeywordInvokeExpr implements Expr{
 //		catch(Throwable e)
 //			{
 //			if(!(e instanceof CompilerException))
-//				throw new CompilerException(source, line, e);
+//				throw new CompilerException(source, line, column, e);
 //			else
 //				throw (CompilerException) e;
 //			}
@@ -3307,6 +3389,7 @@ static class InvokeExpr implements Expr{
 	public final Object tag;
 	public final IPersistentVector args;
 	public final int line;
+	public final int column;
 	public final String source;
 	public boolean isProtocol = false;
 	public boolean isDirect = false;
@@ -3316,11 +3399,12 @@ static class InvokeExpr implements Expr{
 	static Keyword onKey = Keyword.intern("on");
 	static Keyword methodMapKey = Keyword.intern("method-map");
 
-	public InvokeExpr(String source, int line, Symbol tag, Expr fexpr, IPersistentVector args) {
+	public InvokeExpr(String source, int line, int column, Symbol tag, Expr fexpr, IPersistentVector args) {
 		this.source = source;
 		this.fexpr = fexpr;
 		this.args = args;
 		this.line = line;
+		this.column = column;
 		if(fexpr instanceof VarExpr)
 			{
 			Var fvar = ((VarExpr)fexpr).var;
@@ -3384,7 +3468,7 @@ static class InvokeExpr implements Expr{
 		catch(Throwable e)
 			{
 			if(!(e instanceof CompilerException))
-				throw new CompilerException(source, line, e);
+				throw new CompilerException(source, line, column, e);
 			else
 				throw (CompilerException) e;
 			}
@@ -3539,7 +3623,7 @@ static class InvokeExpr implements Expr{
 			{
 //			fexpr = new ConstantExpr(new KeywordCallSite(((KeywordExpr)fexpr).k));
 			Expr target = analyze(context, RT.second(form));
-			return new KeywordInvokeExpr((String) SOURCE.deref(), (Integer) LINE.deref(), tagOf(form),
+			return new KeywordInvokeExpr((String) SOURCE.deref(), lineDeref(), columnDeref(), tagOf(form),
 			                             (KeywordExpr) fexpr, target);
 			}
 		PersistentVector args = PersistentVector.EMPTY;
@@ -3551,7 +3635,7 @@ static class InvokeExpr implements Expr{
 //			throw new IllegalArgumentException(
 //					String.format("No more than %d args supported", MAX_POSITIONAL_ARITY));
 
-		return new InvokeExpr((String) SOURCE.deref(), (Integer) LINE.deref(), tagOf(form), fexpr, args);
+		return new InvokeExpr((String) SOURCE.deref(), lineDeref(), columnDeref(), tagOf(form), fexpr, args);
 	}
 }
 
@@ -3643,7 +3727,7 @@ static public class FnExpr extends ObjExpr{
 		try
 			{
 			Var.pushThreadBindings(
-					RT.map(CONSTANTS, PersistentVector.EMPTY,
+					RT.mapUniqueKeys(CONSTANTS, PersistentVector.EMPTY,
 					       CONSTANT_IDS, new IdentityHashMap(),
 					       KEYWORDS, PersistentHashMap.EMPTY,
 					       VARS, PersistentHashMap.EMPTY,
@@ -3666,7 +3750,8 @@ static public class FnExpr extends ObjExpr{
 			//turn former into latter
 			if(RT.second(form) instanceof IPersistentVector)
 				form = RT.list(FN, RT.next(form));
-			fn.line = (Integer) LINE.deref();
+			fn.line = lineDeref();
+			fn.column = columnDeref();
 			FnMethod[] methodArray = new FnMethod[MAX_POSITIONAL_ARITY + 1];
 			FnMethod variadicMethod = null;
 			for(ISeq s = RT.next(form); s != null; s = RT.next(s))
@@ -3723,7 +3808,7 @@ static public class FnExpr extends ObjExpr{
 		fn.hasPrimSigs = prims.size() > 0;
 		IPersistentMap fmeta = RT.meta(origForm);
 		if(fmeta != null)
-			fmeta = fmeta.without(RT.LINE_KEY).without(RT.FILE_KEY);
+			fmeta = fmeta.without(RT.LINE_KEY).without(RT.COLUMN_KEY).without(RT.FILE_KEY);
 
 		fn.hasMeta = RT.count(fmeta) > 0;
 
@@ -3806,6 +3891,7 @@ static public class ObjExpr implements Expr{
 	IPersistentMap vars = PersistentHashMap.EMPTY;
 	Class compiledClass;
 	int line;
+	int column;
 	PersistentVector constants;
 	int constantsID;
 	int altCtorDrops = 0;
@@ -3859,6 +3945,10 @@ static public class ObjExpr implements Expr{
 
 	public final int line(){
 		return line;
+	}
+
+	public final int column(){
+		return column;
 	}
 
 	public final PersistentVector constants(){
@@ -3930,6 +4020,8 @@ static public class ObjExpr implements Expr{
 		String source = (String) SOURCE.deref();
 		int lineBefore = (Integer) LINE_BEFORE.deref();
 		int lineAfter = (Integer) LINE_AFTER.deref() + 1;
+		int columnBefore = (Integer) COLUMN_BEFORE.deref();
+		int columnAfter = (Integer) COLUMN_AFTER.deref() + 1;
 
 		if(source != null && SOURCE_PATH.deref() != null)
 			{
@@ -4942,13 +5034,14 @@ public static class FnMethod extends ObjMethod{
 		try
 			{
 			FnMethod method = new FnMethod(objx, (ObjMethod) METHOD.deref());
-			method.line = (Integer) LINE.deref();
+			method.line = lineDeref();
+			method.column = columnDeref();
 			//register as the current method and set up a new env frame
             PathNode pnode =  (PathNode) CLEAR_PATH.get();
 			if(pnode == null)
 				pnode = new PathNode(PATHTYPE.PATH,null);
 			Var.pushThreadBindings(
-					RT.map(
+					RT.mapUniqueKeys(
 							METHOD, method,
 							LOCAL_ENV, LOCAL_ENV.deref(),
 							LOOP_LOCALS, null,
@@ -5312,6 +5405,7 @@ abstract public static class ObjMethod{
 	PersistentVector argLocals;
 	int maxLocal = 0;
 	int line;
+	int column;
 	PersistentHashSet localsUsedInCatchFinally = PersistentHashSet.EMPTY;
 	protected IPersistentMap methodMeta;
 
@@ -5338,6 +5432,10 @@ abstract public static class ObjMethod{
 
 	public final int line(){
 		return line;
+	}
+
+	public final int column(){
+		return column;
 	}
 
 	public ObjMethod(ObjExpr objx, ObjMethod parent){
@@ -5716,7 +5814,7 @@ public static class LetFnExpr implements Expr{
 			ISeq body = RT.next(RT.next(form));
 
 			if(context == C.EVAL)
-				return analyze(context, RT.list(RT.list(FN, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
 
 			IPersistentMap dynamicBindings = RT.map(LOCAL_ENV, LOCAL_ENV.deref(),
 			                                        NEXT_LOCAL_NUM, NEXT_LOCAL_NUM.deref());
@@ -5845,7 +5943,7 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 
 			if(context == C.EVAL
 			   || (context == C.EXPRESSION && isLoop))
-				return analyze(context, RT.list(RT.list(FN, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
 
 			ObjMethod method = (ObjMethod) METHOD.deref();
 			IPersistentMap backupMethodLocals = method.locals;
@@ -5885,14 +5983,14 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 							{
 							if(recurMismatches != null && RT.booleanCast(recurMismatches.nth(i/2)))
 								{
-								init = new StaticMethodExpr("", 0, null, RT.class, "box", RT.vector(init));
+								init = new StaticMethodExpr("", 0, 0, null, RT.class, "box", RT.vector(init));
 								if(RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
 									RT.errPrintWriter().println("Auto-boxing loop arg: " + sym);
 								}
 							else if(maybePrimitiveType(init) == int.class)
-								init = new StaticMethodExpr("", 0, null, RT.class, "longCast", RT.vector(init));
+								init = new StaticMethodExpr("", 0, 0, null, RT.class, "longCast", RT.vector(init));
 							else if(maybePrimitiveType(init) == float.class)
-								init = new StaticMethodExpr("", 0, null, RT.class, "doubleCast", RT.vector(init));
+								init = new StaticMethodExpr("", 0, 0, null, RT.class, "doubleCast", RT.vector(init));
 							}
 						//sequential enhancement of env (like Lisp let*)
 						LocalBinding lb = registerLocal(sym, tagOf(sym), init,false);
@@ -6029,17 +6127,19 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 
 }
 
-public static class RecurExpr implements Expr{
+public static class RecurExpr implements Expr, MaybePrimitiveExpr{
 	public final IPersistentVector args;
 	public final IPersistentVector loopLocals;
 	final int line;
+	final int column;
 	final String source;
 
 
-	public RecurExpr(IPersistentVector loopLocals, IPersistentVector args, int line, String source){
+	public RecurExpr(IPersistentVector loopLocals, IPersistentVector args, int line, int column, String source){
 		this.loopLocals = loopLocals;
 		this.args = args;
 		this.line = line;
+		this.column = column;
 		this.source = source;
 	}
 
@@ -6132,12 +6232,13 @@ public static class RecurExpr implements Expr{
 	}
 
 	public Class getJavaClass() {
-		return null;
+		return RECUR_CLASS;
 	}
 
 	static class Parser implements IParser{
 		public Expr parse(C context, Object frm) {
-			int line = (Integer) LINE.deref();
+			int line = lineDeref();
+			int column = columnDeref();
 			String source = (String) SOURCE.deref();
 
 			ISeq form = (ISeq) frm;
@@ -6192,8 +6293,16 @@ public static class RecurExpr implements Expr{
 						}
 					}
 				}
-			return new RecurExpr(loopLocals, args, line, source);
+			return new RecurExpr(loopLocals, args, line, column, source);
 		}
+	}
+
+	public boolean canEmitPrimitive() {
+		return true;
+	}
+
+	public void emitUnboxed(C context, ObjExpr objx, GeneratorAdapter gen) {
+		emit(context, objx, gen);
 	}
 }
 
@@ -6276,7 +6385,7 @@ private static Expr analyze(C context, Object form, String name) {
 	catch(Throwable e)
 		{
 		if(!(e instanceof CompilerException))
-			throw new CompilerException((String) SOURCE_PATH.deref(), (Integer) LINE.deref(), e);
+			throw new CompilerException((String) SOURCE_PATH.deref(), lineDeref(), columnDeref(), e);
 		else
 			throw (CompilerException) e;
 		}
@@ -6285,9 +6394,12 @@ private static Expr analyze(C context, Object form, String name) {
 static public class CompilerException extends RuntimeException{
 	final public String source;
 	
-	public CompilerException(String source, int line, Throwable cause){
-		super(errorMsg(source, line, cause.toString()), cause);
+	final public int line;
+
+	public CompilerException(String source, int line, int column, Throwable cause){
+		super(errorMsg(source, line, column, cause.toString()), cause);
 		this.source = source;
+		this.line = line;
 	}
 
 	public String toString(){
@@ -6429,11 +6541,14 @@ static Object macroexpand(Object form) {
 }
 
 private static Expr analyzeSeq(C context, ISeq form, String name) {
-	Integer line = (Integer) LINE.deref();
+	Object line = lineDeref();
+	Object column = columnDeref();
 	if(RT.meta(form) != null && RT.meta(form).containsKey(RT.LINE_KEY))
-		line = (Integer) RT.meta(form).valAt(RT.LINE_KEY);
+		line = RT.meta(form).valAt(RT.LINE_KEY);
+	if(RT.meta(form) != null && RT.meta(form).containsKey(RT.COLUMN_KEY))
+		column = RT.meta(form).valAt(RT.COLUMN_KEY);
 	Var.pushThreadBindings(
-			RT.map(LINE, line));
+			RT.map(LINE, line, COLUMN, column));
 	try
 		{
 		Object me = macroexpand1(form);
@@ -6457,7 +6572,7 @@ private static Expr analyzeSeq(C context, ISeq form, String name) {
 	catch(Throwable e)
 		{
 		if(!(e instanceof CompilerException))
-			throw new CompilerException((String) SOURCE_PATH.deref(), (Integer) LINE.deref(), e);
+			throw new CompilerException((String) SOURCE_PATH.deref(), lineDeref(), columnDeref(), e);
 		else
 			throw (CompilerException) e;
 		}
@@ -6467,8 +6582,8 @@ private static Expr analyzeSeq(C context, ISeq form, String name) {
 		}
 }
 
-static String errorMsg(String source, int line, String s){
-	return String.format("%s, compiling:(%s:%d)", s, source, line);
+static String errorMsg(String source, int line, int column, String s){
+	return String.format("%s, compiling:(%s:%d:%d)", s, source, line, column);
 }
 
 public static Object eval(Object form) {
@@ -6484,10 +6599,13 @@ public static Object eval(Object form, boolean freshLoader) {
 		}
 	try
 		{
-		Integer line = (Integer) LINE.deref();
+		Object line = lineDeref();
+		Object column = columnDeref();
 		if(RT.meta(form) != null && RT.meta(form).containsKey(RT.LINE_KEY))
-			line = (Integer) RT.meta(form).valAt(RT.LINE_KEY);
-		Var.pushThreadBindings(RT.map(LINE, line));
+			line = RT.meta(form).valAt(RT.LINE_KEY);
+		if(RT.meta(form) != null && RT.meta(form).containsKey(RT.COLUMN_KEY))
+			column = RT.meta(form).valAt(RT.COLUMN_KEY);
+		Var.pushThreadBindings(RT.map(LINE, line, COLUMN, column));
 		try
 			{
 			form = macroexpand(form);
@@ -6657,7 +6775,7 @@ private static Expr analyzeSymbol(Symbol sym) {
 			if(c != null)
 				{
 				if(Reflector.getField(c, sym.name, true) != null)
-					return new StaticFieldExpr((Integer) LINE.deref(), c, sym.name, tag);
+					return new StaticFieldExpr(lineDeref(), columnDeref(), c, sym.name, tag);
 				throw Util.runtimeException("Unable to find static field: " + sym.name + " in " + c);
 				}
 			}
@@ -6926,16 +7044,19 @@ public static Object load(Reader rdr, String sourcePath, String sourceName) {
 			(rdr instanceof LineNumberingPushbackReader) ? (LineNumberingPushbackReader) rdr :
 			new LineNumberingPushbackReader(rdr);
 	Var.pushThreadBindings(
-			RT.map(LOADER, RT.makeClassLoader(),
+			RT.mapUniqueKeys(LOADER, RT.makeClassLoader(),
 			       SOURCE_PATH, sourcePath,
 			       SOURCE, sourceName,
 			       METHOD, null,
 			       LOCAL_ENV, null,
 					LOOP_LOCALS, null,
 					NEXT_LOCAL_NUM, 0,
+					RT.READEVAL, RT.T,
 			       RT.CURRENT_NS, RT.CURRENT_NS.deref(),
 			       LINE_BEFORE, pushbackReader.getLineNumber(),
-			       LINE_AFTER, pushbackReader.getLineNumber()
+			       COLUMN_BEFORE, pushbackReader.getColumnNumber(),
+			       LINE_AFTER, pushbackReader.getLineNumber(),
+			       COLUMN_AFTER, pushbackReader.getColumnNumber()
 			       ,RT.UNCHECKED_MATH, RT.UNCHECKED_MATH.deref()
 					,RT.WARN_ON_REFLECTION, RT.WARN_ON_REFLECTION.deref()
 			       ,RT.DATA_READERS, RT.DATA_READERS.deref()
@@ -6947,13 +7068,15 @@ public static Object load(Reader rdr, String sourcePath, String sourceName) {
 		    r = LispReader.read(pushbackReader, false, EOF, false))
 			{
 			LINE_AFTER.set(pushbackReader.getLineNumber());
+			COLUMN_AFTER.set(pushbackReader.getColumnNumber());
 			ret = eval(r,false);
 			LINE_BEFORE.set(pushbackReader.getLineNumber());
+			COLUMN_BEFORE.set(pushbackReader.getColumnNumber());
 			}
 		}
 	catch(LispReader.ReaderException e)
 		{
-		throw new CompilerException(sourcePath, e.line, e.getCause());
+		throw new CompilerException(sourcePath, e.line, e.column, e.getCause());
 		}
 	finally
 		{
@@ -6998,7 +7121,9 @@ public static void pushNSandLoader(ClassLoader loader){
 	Var.pushThreadBindings(RT.map(Var.intern(Symbol.intern("clojure.core"),
 	                                         Symbol.intern("*ns*")).setDynamic(),
 	                              null,
-	                              RT.FN_LOADER_VAR, loader));
+	                              RT.FN_LOADER_VAR, loader,
+	                              RT.READEVAL, RT.T
+	                              ));
 }
 
 public static ILookupThunk getLookupThunk(Object target, Keyword k){
@@ -7006,11 +7131,14 @@ public static ILookupThunk getLookupThunk(Object target, Keyword k){
 }
 
 static void compile1(GeneratorAdapter gen, ObjExpr objx, Object form) {
-	Integer line = (Integer) LINE.deref();
+	Object line = lineDeref();
+	Object column = columnDeref();
 	if(RT.meta(form) != null && RT.meta(form).containsKey(RT.LINE_KEY))
-		line = (Integer) RT.meta(form).valAt(RT.LINE_KEY);
+		line = RT.meta(form).valAt(RT.LINE_KEY);
+	if(RT.meta(form) != null && RT.meta(form).containsKey(RT.COLUMN_KEY))
+		column = RT.meta(form).valAt(RT.COLUMN_KEY);
 	Var.pushThreadBindings(
-			RT.map(LINE, line
+			RT.map(LINE, line, COLUMN, column
 			       ,LOADER, RT.makeClassLoader()
 			));
 	try
@@ -7049,15 +7177,18 @@ public static Object compile(Reader rdr, String sourcePath, String sourceName) t
 			(rdr instanceof LineNumberingPushbackReader) ? (LineNumberingPushbackReader) rdr :
 			new LineNumberingPushbackReader(rdr);
 	Var.pushThreadBindings(
-			RT.map(SOURCE_PATH, sourcePath,
+			RT.mapUniqueKeys(SOURCE_PATH, sourcePath,
 			       SOURCE, sourceName,
 			       METHOD, null,
 			       LOCAL_ENV, null,
 					LOOP_LOCALS, null,
 					NEXT_LOCAL_NUM, 0,
-			       RT.CURRENT_NS, RT.CURRENT_NS.deref(),
+					RT.READEVAL, RT.T,
+					RT.CURRENT_NS, RT.CURRENT_NS.deref(),
 			       LINE_BEFORE, pushbackReader.getLineNumber(),
+			       COLUMN_BEFORE, pushbackReader.getColumnNumber(),
 			       LINE_AFTER, pushbackReader.getLineNumber(),
+			       COLUMN_AFTER, pushbackReader.getColumnNumber(),
 			       CONSTANTS, PersistentVector.EMPTY,
 			       CONSTANT_IDS, new IdentityHashMap(),
 			       KEYWORDS, PersistentHashMap.EMPTY,
@@ -7092,8 +7223,10 @@ public static Object compile(Reader rdr, String sourcePath, String sourceName) t
 		    r = LispReader.read(pushbackReader, false, EOF, false))
 			{
 				LINE_AFTER.set(pushbackReader.getLineNumber());
+				COLUMN_AFTER.set(pushbackReader.getColumnNumber());
 				compile1(gen, objx, r);
 				LINE_BEFORE.set(pushbackReader.getLineNumber());
+				COLUMN_BEFORE.set(pushbackReader.getColumnNumber());
 			}
 		//end of load
 		gen.returnValue();
@@ -7185,7 +7318,7 @@ public static Object compile(Reader rdr, String sourcePath, String sourceName) t
 		}
 	catch(LispReader.ReaderException e)
 		{
-		throw new CompilerException(sourcePath, e.line, e.getCause());
+		throw new CompilerException(sourcePath, e.line, e.column, e.getCause());
 		}
 	finally
 		{
@@ -7319,7 +7452,7 @@ static public class NewInstanceExpr extends ObjExpr{
 		try
 			{
 			Var.pushThreadBindings(
-					RT.map(CONSTANTS, PersistentVector.EMPTY,
+					RT.mapUniqueKeys(CONSTANTS, PersistentVector.EMPTY,
 					       CONSTANT_IDS, new IdentityHashMap(),
 					       KEYWORDS, PersistentHashMap.EMPTY,
 					       VARS, PersistentHashMap.EMPTY,
@@ -7329,7 +7462,7 @@ static public class NewInstanceExpr extends ObjExpr{
                                                NO_RECUR, null));
 			if(ret.isDeftype())
 				{
-				Var.pushThreadBindings(RT.map(METHOD, null,
+				Var.pushThreadBindings(RT.mapUniqueKeys(METHOD, null,
 				                              LOCAL_ENV, ret.fields
 						, COMPILE_STUB_SYM, Symbol.intern(null, tagName)
 						, COMPILE_STUB_CLASS, stub));
@@ -7338,7 +7471,8 @@ static public class NewInstanceExpr extends ObjExpr{
 				}
 
 			//now (methodname [args] body)*
-			ret.line = (Integer) LINE.deref();
+			ret.line = lineDeref();
+			ret.column = columnDeref();
 			IPersistentCollection methods = null;
 			for(ISeq s = methodForms; s != null; s = RT.next(s))
 				{
@@ -7698,11 +7832,12 @@ public static class NewInstanceMethod extends ObjMethod{
 		ISeq body = RT.next(RT.next(form));
 		try
 			{
-			method.line = (Integer) LINE.deref();
+			method.line = lineDeref();
+			method.column = columnDeref();
 			//register as the current method and set up a new env frame
             PathNode pnode =  new PathNode(PATHTYPE.PATH, (PathNode) CLEAR_PATH.get());
 			Var.pushThreadBindings(
-					RT.map(
+					RT.mapUniqueKeys(
 							METHOD, method,
 							LOCAL_ENV, LOCAL_ENV.deref(),
 							LOOP_LOCALS, null,
@@ -8001,6 +8136,7 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
 	public final Set<Integer> skipCheck;
 	public final Class returnType;
 	public final int line;
+	public final int column;
 
 	final static Type NUMBER_TYPE = Type.getType(Number.class);
 	final static Method intValueMethod = Method.getMethod("int intValue()");
@@ -8014,7 +8150,7 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
     final static Keyword hashEquivKey = Keyword.intern(null, "hash-equiv");
     final static Keyword intKey = Keyword.intern(null, "int");
 	//(case* expr shift mask default map<minhash, [test then]> table-type test-type skip-check?)
-	public CaseExpr(int line, LocalBindingExpr expr, int shift, int mask, int low, int high, Expr defaultExpr,
+	public CaseExpr(int line, int column, LocalBindingExpr expr, int shift, int mask, int low, int high, Expr defaultExpr,
 	        SortedMap<Integer,Expr> tests,HashMap<Integer,Expr> thens, Keyword switchType, Keyword testType, Set<Integer> skipCheck){
 		this.expr = expr;
 		this.shift = shift;
@@ -8025,6 +8161,7 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
 		this.tests = tests;
 		this.thens = thens;
 		this.line = line;
+		this.column = column;
 		if (switchType != compactKey && switchType != sparseKey)
 		    throw new IllegalArgumentException("Unexpected switch type: "+switchType);
 		this.switchType = switchType;
@@ -8038,8 +8175,8 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
         if(RT.count(skipCheck) > 0 && RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
             {
             RT.errPrintWriter()
-              .format("Performance warning, %s:%d - hash collision of some case test constants; if selected, those entries will be tested sequentially.\n",
-                      SOURCE_PATH.deref(), line);
+              .format("Performance warning, %s:%d:%d - hash collision of some case test constants; if selected, those entries will be tested sequentially.\n",
+                      SOURCE_PATH.deref(), line, column);
             }
 	}
 
@@ -8143,8 +8280,8 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
             if(RT.booleanCast(RT.WARN_ON_REFLECTION.deref()))
                 {
                 RT.errPrintWriter()
-                  .format("Performance warning, %s:%d - case has int tests, but tested expression is not primitive.\n",
-                          SOURCE_PATH.deref(), line);
+                  .format("Performance warning, %s:%d:%d - case has int tests, but tested expression is not primitive.\n",
+                          SOURCE_PATH.deref(), line, column);
                 }
             expr.emit(C.EXPRESSION, objx, gen);
             gen.instanceOf(NUMBER_TYPE);
@@ -8242,7 +8379,7 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
 		public Expr parse(C context, Object frm) {
 			ISeq form = (ISeq) frm;
 			if(context == C.EVAL)
-				return analyze(context, RT.list(RT.list(FN, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
 			PersistentVector args = PersistentVector.create(form.next());
 
 			Object exprForm = args.nth(0);
@@ -8299,7 +8436,8 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
                 }
 
             int line = ((Number)LINE.deref()).intValue();
-			return new CaseExpr(line, testexpr, shift, mask, low, high,
+            int column = ((Number)COLUMN.deref()).intValue();
+			return new CaseExpr(line, column, testexpr, shift, mask, low, high,
 			        defaultExpr, tests, thens, switchType, testType, skipCheck);
 		}
 	}

@@ -139,7 +139,7 @@
 
 
 (deftest test-cons
-  (is (thrown? IllegalArgumentException (cons 1 2)))
+  (is (thrown? Throwable (cons 1 2)))
   (are [x y] (= x y)
     (cons 1 nil) '(1)
     (cons nil nil) '(nil)
@@ -244,13 +244,13 @@
 
 (deftest test-first
   ;(is (thrown? Exception (first)))
-  (is (thrown? IllegalArgumentException (first true)))
-  (is (thrown? IllegalArgumentException (first false)))
-  (is (thrown? IllegalArgumentException (first 1)))
-  ;(is (thrown? IllegalArgumentException (first 1 2)))
-  (is (thrown? IllegalArgumentException (first \a)))
-  (is (thrown? IllegalArgumentException (first 's)))
-  (is (thrown? IllegalArgumentException (first :k)))
+  (is (thrown? Throwable (first true)))
+  (is (thrown? Throwable (first false)))
+  (is (thrown? Throwable (first 1)))
+  ;(is (thrown? Throwable (first 1 2)))
+  (is (thrown? Throwable (first \a)))
+  (is (thrown? Throwable (first 's)))
+  (is (thrown? Throwable (first :k)))
   (are [x y] (= x y)
     (first nil) nil
 
@@ -310,14 +310,14 @@
 
 
 (deftest test-next
- ; (is (thrown? IllegalArgumentException (next)))
-  (is (thrown? IllegalArgumentException (next true)))
-  (is (thrown? IllegalArgumentException (next false)))
-  (is (thrown? IllegalArgumentException (next 1)))
-  ;(is (thrown? IllegalArgumentException (next 1 2)))
-  (is (thrown? IllegalArgumentException (next \a)))
-  (is (thrown? IllegalArgumentException (next 's)))
-  (is (thrown? IllegalArgumentException (next :k)))
+ ; (is (thrown? Throwable (next)))
+  (is (thrown? Throwable (next true)))
+  (is (thrown? Throwable (next false)))
+  (is (thrown? Throwable (next 1)))
+  ;(is (thrown? Throwable (next 1 2)))
+  (is (thrown? Throwable (next \a)))
+  (is (thrown? Throwable (next 's)))
+  (is (thrown? Throwable (next :k)))
   (are [x y] (= x y)
     (next nil) nil
 
@@ -445,7 +445,7 @@
 ;; (ffirst coll) = (first (first coll))
 ;;
 (deftest test-ffirst
-;  (is (thrown? IllegalArgumentException (ffirst)))
+;  (is (thrown? Throwable (ffirst)))
   (are [x y] (= x y)
     (ffirst nil) nil
 
@@ -465,7 +465,7 @@
 ;; (fnext coll) = (first (next coll)) = (second coll)
 ;;
 (deftest test-fnext
-;  (is (thrown? IllegalArgumentException (fnext)))
+;  (is (thrown? Throwable (fnext)))
   (are [x y] (= x y)
     (fnext nil) nil
 
@@ -489,7 +489,7 @@
 ;; (nfirst coll) = (next (first coll))
 ;;
 (deftest test-nfirst
-;  (is (thrown? IllegalArgumentException (nfirst)))
+;  (is (thrown? Throwable (nfirst)))
   (are [x y] (= x y)
     (nfirst nil) nil
 
@@ -509,7 +509,7 @@
 ;; (nnext coll) = (next (next coll))
 ;;
 (deftest test-nnext
-;  (is (thrown? IllegalArgumentException (nnext)))
+;  (is (thrown? Throwable (nnext)))
   (are [x y] (= x y)
     (nnext nil) nil
 
@@ -682,7 +682,11 @@
 
     (interleave [] [3 4]) ()
     (interleave [1 2] []) ()
-    (interleave [] []) () ))
+    (interleave [] []) ()
+
+    (interleave [1]) '(1)
+
+    (interleave) () ))
 
 
 (deftest test-zipmap
@@ -877,7 +881,7 @@
 
 
 (deftest test-repeat
-  ;(is (thrown? IllegalArgumentException (repeat)))
+  ;(is (thrown? Throwable (repeat)))
 
   ; infinite sequence => use take
   (are [x y] (= x y)
@@ -944,7 +948,9 @@
       (range -2 -2) ()
       (range -2 -5) ()
 
-      (range 3 9 0) ()
+      (take 3 (range 3 9 0)) '(3 3 3)
+      (take 3 (range 9 3 0)) '(9 9 9)
+      (range 0 0 0) ()
       (range 3 9 1) '(3 4 5 6 7 8)
       (range 3 9 2) '(3 5 7)
       (range 3 9 3) '(3 6)
