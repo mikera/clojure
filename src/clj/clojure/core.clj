@@ -1548,22 +1548,31 @@
   list already. If there are more forms, inserts the first form as the
   second item in second form, etc."
   {:added "1.0"}
-  ([x] x)
-  ([x form] (if (seq? form)
-              (with-meta `(~(first form) ~x ~@(next form)) (meta form))
-              (list form x)))
-  ([x form & more] `(-> (-> ~x ~form) ~@more)))
+  [x & forms]
+  (loop [x x, forms forms]
+    (if forms
+      (let [form (first forms)
+            threaded (if (seq? form)
+                       (with-meta `(~(first form) ~x ~@(next form)) (meta form))
+                       (list form x))]
+        (recur threaded (next forms)))
+      x)))
 
 (defmacro ->>
   "Threads the expr through the forms. Inserts x as the
   last item in the first form, making a list of it if it is not a
   list already. If there are more forms, inserts the first form as the
   last item in second form, etc."
-  {:added "1.1"} 
-  ([x form] (if (seq? form)
+  {:added "1.1"}
+  [x & forms]
+  (loop [x x, forms forms]
+    (if forms
+      (let [form (first forms)
+            threaded (if (seq? form)
               (with-meta `(~(first form) ~@(next form)  ~x) (meta form))
-              (list form x)))
-  ([x form & more] `(->> (->> ~x ~form) ~@more)))
+              (list form x))]
+        (recur threaded (next forms)))
+      x)))
 
 (def map)
 
@@ -3278,6 +3287,7 @@
        (instance? clojure.lang.BigInt x) x
        (instance? BigInteger x) (clojure.lang.BigInt/fromBigInteger x)
        (decimal? x) (bigint (.toBigInteger ^BigDecimal x))
+       (float? x)  (bigint (. BigDecimal valueOf (double x)))
        (ratio? x) (bigint (.bigIntegerValue ^clojure.lang.Ratio x))
        (number? x) (clojure.lang.BigInt/valueOf (long x))
        :else (bigint (BigInteger. x))))
@@ -3291,6 +3301,7 @@
        (instance? BigInteger x) x
        (instance? clojure.lang.BigInt x) (.toBigInteger ^clojure.lang.BigInt x)
        (decimal? x) (.toBigInteger ^BigDecimal x)
+       (float? x) (.toBigInteger (. BigDecimal valueOf (double x)))
        (ratio? x) (.bigIntegerValue ^clojure.lang.Ratio x)
        (number? x) (BigInteger/valueOf (long x))
        :else (BigInteger. x)))
@@ -5795,7 +5806,7 @@
 (add-doc-and-meta *file*
   "The path of the file being evaluated, as a String.
 
-  Evaluates to nil when there is no file, eg. in the REPL."
+  When there is no file, e.g. in the REPL, the value is not defined."
   {:added "1.0"})
 
 (add-doc-and-meta *command-line-args*

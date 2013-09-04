@@ -3579,13 +3579,16 @@ static class InvokeExpr implements Expr{
 		if(context != C.EVAL)
 			context = C.EXPRESSION;
 		Expr fexpr = analyze(context, form.first());
-		if(fexpr instanceof VarExpr && ((VarExpr)fexpr).var.equals(INSTANCE))
+		if(fexpr instanceof VarExpr && ((VarExpr)fexpr).var.equals(INSTANCE) && RT.count(form) == 3)
 			{
-			if(RT.second(form) instanceof Symbol)
+			Expr sexpr = analyze(C.EXPRESSION, RT.second(form));
+			if(sexpr instanceof ConstantExpr)
 				{
-				Class c = HostExpr.maybeClass(RT.second(form),false);
-				if(c != null)
-					return new InstanceOfExpr(c, analyze(context, RT.third(form)));
+				Object val = ((ConstantExpr) sexpr).val();
+				if(val instanceof Class)
+					{
+					return new InstanceOfExpr((Class) val, analyze(context, RT.third(form)));
+					}
 				}
 			}
 
@@ -5225,7 +5228,11 @@ public static class FnMethod extends ObjMethod{
 	}
 
 	public void doEmitPrim(ObjExpr fn, ClassVisitor cv){
-		Method ms = new Method("invokePrim", getReturnType(), argtypes);
+		Type returnType;
+		if (retClass == double.class || retClass == long.class)
+			returnType = getReturnType();
+		else returnType = OBJECT_TYPE;
+		Method ms = new Method("invokePrim", returnType, argtypes);
 
 		GeneratorAdapter gen = new GeneratorAdapter(ACC_PUBLIC + ACC_FINAL,
 		                                            ms,
