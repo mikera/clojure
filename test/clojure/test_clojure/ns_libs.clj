@@ -9,7 +9,8 @@
 ; Authors: Frantisek Sodomka, Stuart Halloway
 
 (ns clojure.test-clojure.ns-libs
-  (:use clojure.test))
+  (:use clojure.test)
+  (:use clojure.test-helper))
 
 ; http://clojure.org/namespaces
 
@@ -95,3 +96,7 @@
     (testing "referring to something non-public"
       (is (thrown-with-msg? IllegalAccessError #"hidden-var is not public"
             (refer temp-ns :only '(hidden-var)))))))
+
+(deftest replacing-core-symbol
+  (testing "no warning from replacing a symbol is clojure.core with an explicit use"
+    (is (empty? (with-err-print-writer (use 'clojure.test-clojure.test-namespaces.override))))))
