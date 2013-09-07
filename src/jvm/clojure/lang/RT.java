@@ -224,6 +224,7 @@ final static Var PRINT_META = Var.intern(CLOJURE_NS, Symbol.intern("*print-meta*
 final static Var PRINT_READABLY = Var.intern(CLOJURE_NS, Symbol.intern("*print-readably*"), T).setDynamic();
 final static Var PRINT_DUP = Var.intern(CLOJURE_NS, Symbol.intern("*print-dup*"), F).setDynamic();
 final static Var WARN_ON_REFLECTION = Var.intern(CLOJURE_NS, Symbol.intern("*warn-on-reflection*"), F).setDynamic();
+final static Var WARN_ON_REPLACE = Var.intern(CLOJURE_NS, Symbol.intern("*warn-on-replace*"), F).setDynamic();
 final static Var ALLOW_UNRESOLVED_VARS = Var.intern(CLOJURE_NS, Symbol.intern("*allow-unresolved-vars*"), F).setDynamic();
 
 final static Var IN_NS_VAR = Var.intern(CLOJURE_NS, Symbol.intern("in-ns"), F);
