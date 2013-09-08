@@ -5821,6 +5821,13 @@
   Defaults to false."
   {:added "1.0"})
 
+(add-doc-and-meta *warn-on-replace*
+  "When set to true, the compiler will emit warnings when a symbol in
+   clojure.core is replaced by a symbol imported via 'use' or 'refer'.
+
+  Defaults to false."
+  {:added "1.0"})
+
 (add-doc-and-meta *compile-path*
   "Specifies the directory where 'compile' will write out .class
   files. This directory must be in the classpath for 'compile' to
