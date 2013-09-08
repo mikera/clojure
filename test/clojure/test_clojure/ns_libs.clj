@@ -98,5 +98,6 @@
             (refer temp-ns :only '(hidden-var)))))))
 
 (deftest replacing-core-symbol
-  (testing "no warning from replacing a symbol is clojure.core with an explicit use"
-    (is (empty? (with-err-print-writer (use 'clojure.test-clojure.test-namespaces.override))))))
+  (testing "no warning from replacing a symbol in clojure.core with an explicit use"
+    (binding [*warn-on-replace* false]
+      (is (empty? (with-err-print-writer (use 'clojure.test-clojure.test-namespaces.override)))))))
