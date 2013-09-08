@@ -87,7 +87,7 @@ private void warnOrFailOnReplace(Symbol sym, Object o, Object v){
         if (ns != RT.CLOJURE_NS)
             throw new IllegalStateException(sym + " already refers to: " + o + " in namespace: " + name);
         }
-    if (RT.booleanCast(RT.WARN_ON_REFLECTION.deref())) {
+    if (RT.booleanCast(RT.WARN_ON_REPLACE.deref())) {
     	RT.errPrintWriter().println("WARNING: " + sym + " already refers to: " + o + " in namespace: " + name
     			+ ", being replaced by: " + v);
     }
