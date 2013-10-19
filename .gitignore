@@ -8,3 +8,4 @@ maven-classpath.properties
 /.classpath
 /.project
 /.settings
+/classes
