@@ -234,6 +234,74 @@ static public class ArraySeq_int extends ASeq implements IndexedSeq, IReduce{
 }
 
 
+static public class ArraySeq_short extends ASeq implements IndexedSeq, IReduce{
+	public final short[] array;
+	final int i;
+
+	ArraySeq_short(IPersistentMap meta, short[] array, int i){
+		super(meta);
+		this.array = array;
+		this.i = i;
+	}
+
+	public Object first(){
+		return array[i];
+	}
+
+	public ISeq next(){
+		if(i + 1 < array.length)
+			return new ArraySeq_short(meta(), array, i + 1);
+		return null;
+	}
+
+	public int count(){
+		return array.length - i;
+	}
+
+	public int index(){
+		return i;
+	}
+
+	public ArraySeq_short withMeta(IPersistentMap meta){
+		return new ArraySeq_short(meta, array, i);
+	}
+
+	public Object reduce(IFn f) {
+		Object ret = array[i];
+		for(int x = i + 1; x < array.length; x++)
+			ret = f.invoke(ret, array[x]);
+		return ret;
+	}
+
+	public Object reduce(IFn f, Object start) {
+		Object ret = f.invoke(start, array[i]);
+		for(int x = i + 1; x < array.length; x++)
+			ret = f.invoke(ret, array[x]);
+		return ret;
+	}
+
+	public int indexOf(Object o) {
+		if (o instanceof Number) {
+			short k = ((Number) o).shortValue();
+			for (int j = i; j < array.length; j++)
+				if (k == array[j]) return j - i;
+		}
+
+		return -1;
+	}
+	
+	public int lastIndexOf(Object o) {
+		if (o instanceof Number) {
+			short k = ((Number) o).shortValue();
+			for (int j = array.length - 1; j >= i; j--)
+				if (k == array[j]) return j - i;
+		}
+
+		return -1;
+	}
+}
+
+
 static public class ArraySeq_float extends ASeq implements IndexedSeq, IReduce{
 	public final float[] array;
 	final int i;
