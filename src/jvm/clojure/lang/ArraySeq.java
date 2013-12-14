@@ -49,6 +49,8 @@ static ISeq createFromObject(Object array){
 		return new ArraySeq_char(null, (char[]) array, 0);
 	if(aclass == boolean[].class)
 		return new ArraySeq_boolean(null, (boolean[]) array, 0);
+	if(aclass == short[].class)
+		return new ArraySeq_short(null, (short[]) array, 0);
 	return new ArraySeq(array, 0);
 }
 
