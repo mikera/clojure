@@ -13,19 +13,28 @@
 package clojure.lang;
 
 import java.util.Collection;
+import java.util.List;
 
 public class LazilyPersistentVector{
 
+// create an IPersistentVector from coll, handling special cases efficiently 
+static public IPersistentVector create(Object coll) {
+	if (coll==null) return PersistentVector.EMPTY;
+	if (coll instanceof Collection) return create((Collection)coll);
+	return createOwning(RT.toArray(coll));
+}
 
 static public IPersistentVector createOwning(Object... items){
-	if(items.length == 0)
-		return PersistentVector.EMPTY;
+	if(items.length == 0) return PersistentVector.EMPTY;
 	else if(items.length <= 32)
 		return new PersistentVector(items.length, 5, PersistentVector.EMPTY_NODE,items);
 	return PersistentVector.create(items);
 }
 
 static public IPersistentVector create(Collection coll){
+	if (coll instanceof IPersistentVector) return (IPersistentVector) coll;
+	if (coll instanceof ISeq) return PersistentVector.create((ISeq) coll);
+	if (coll instanceof List) return PersistentVector.create((List) coll);
 	if(!(coll instanceof ISeq) && coll.size() <= 32)
 		return createOwning(coll.toArray());
 	return PersistentVector.create(RT.seq(coll));
