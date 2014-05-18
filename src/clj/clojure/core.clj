@@ -349,7 +349,7 @@
   will be aliased and should not be modified."
   {:added "1.0"
    :static true}
-  ([coll]
+  ([^Object coll]
     (. clojure.lang.LazilyPersistentVector (create coll))))
 
 (defn hash-map

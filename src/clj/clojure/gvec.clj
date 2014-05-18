@@ -111,9 +111,9 @@
   clojure.lang.IChunkedSeq
   (chunkedFirst [_] (ArrayChunk. am anode offset (.alength am anode)))
   (chunkedNext [_] 
-   (let [nexti (+ i (.alength am anode))]
+   (let [nexti (int (+ i (.alength am anode)))]
      (when (< nexti (count vec))
-       (new VecSeq am vec (.arrayFor vec nexti) nexti 0))))
+       (new VecSeq am vec (.arrayFor vec nexti) nexti (int 0)))))
   (chunkedMore [this]
     (let [s (.chunkedNext this)]
       (or s (clojure.lang.PersistentList/EMPTY)))))
