@@ -24,7 +24,7 @@ static public IPersistentVector create(Object coll) {
 	return createOwning(RT.toArray(coll));
 }
 
-// create an IPersistentVector ftom an object array, MAY use object array as internal persistent vector storage
+// create an IPersistentVector from an object array, MAY use object array as internal persistent vector storage
 static public IPersistentVector createOwning(Object... items){
 	int n=items.length;
 	if (n == 0) return PersistentVector.EMPTY;
