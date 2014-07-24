@@ -2258,14 +2258,12 @@ public static Object reduce(IFn f, Object init, Object coll) {
 public static Object reduceSeq(IFn f, Object init, ISeq seq) {
 	Object ret=init;
 	while (seq!=null) {
-		ret=f.invoke(init,seq.first());
+		ret=f.invoke(ret,seq.first());
 		if (RT.isReduced(ret)) return ret;
 		seq=seq.next();
 	}
 	return ret;
 }
-
-
 
 public static Object reduce(IFn f, Object init, Object[] items) {
 	Object ret=init;
@@ -2275,6 +2273,26 @@ public static Object reduce(IFn f, Object init, Object[] items) {
 	}
 	return ret;
 }
+
+public static Object reduce(IFn f, Object coll) {
+	if (coll instanceof IReduce) {
+		return ((IReduce) coll).reduce(f);
+	}
+	return reduceSeq(f,RT.seq(coll));
+}
+
+public static Object reduceSeq(IFn f,ISeq seq) {
+	if (seq==null) return f.invoke();
+	Object ret=seq.first();
+	seq=seq.next();
+	while (seq!=null) {
+		ret=f.invoke(ret,seq.first());
+		if (RT.isReduced(ret)) return ret;
+		seq=seq.next();
+	}
+	return ret;
+}
+
 
 
 }

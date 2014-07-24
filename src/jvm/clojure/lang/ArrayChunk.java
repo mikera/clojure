@@ -14,7 +14,7 @@ package clojure.lang;
 
 import java.io.Serializable;
 
-public final class ArrayChunk implements IChunk, Serializable {
+public final class ArrayChunk implements IChunk, Serializable, IReduce {
 
 final Object[] array;
 final int off;
@@ -54,6 +54,7 @@ public IChunk dropFirst(){
 	return new ArrayChunk(array, off + 1, end);
 }
 
+@Override
 public Object reduce(IFn f, Object start) {
 	Object ret = f.invoke(start, array[off]);
 	if(RT.isReduced(ret))

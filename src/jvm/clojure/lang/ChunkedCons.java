@@ -67,7 +67,7 @@ public ISeq chunkedMore(){
 
 @Override
 public Object reduce(IFn f) {
-	Object ret=chunk.reduce(f);
+	Object ret=RT.reduce(f,chunk);
 	if (RT.isReduced(ret)) return ret;
 	if (_more!=null) ret=RT.reduce(f, ret, _more);
 	return ret;
