@@ -12,7 +12,7 @@
 
 package clojure.lang;
 
-public interface IChunk extends Indexed{
+public interface IChunk extends Indexed {
 
 IChunk dropFirst();
 

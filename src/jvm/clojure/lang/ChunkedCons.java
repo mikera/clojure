@@ -12,7 +12,7 @@
 
 package clojure.lang;
 
-final public class ChunkedCons extends ASeq implements IChunkedSeq{
+final public class ChunkedCons extends ASeq implements IChunkedSeq, IReduce {
 
 final IChunk chunk;
 final ISeq _more;
@@ -63,5 +63,21 @@ public ISeq chunkedMore(){
 	if(_more == null)
 		return PersistentList.EMPTY;
 	return _more;
+}
+
+@Override
+public Object reduce(IFn f) {
+	Object ret=chunk.reduce(f);
+	if (RT.isReduced(ret)) return ret;
+	if (_more!=null) ret=RT.reduce(f, ret, _more);
+	return ret;
+}
+
+@Override
+public Object reduce(IFn f, Object start) {
+	Object ret=chunk.reduce(f, start);
+	if (RT.isReduced(ret)) return ret;
+	if (_more!=null) ret=RT.reduce(f, ret, _more);
+	return ret;
 }
 }

@@ -2246,5 +2246,35 @@ static public Object[] aclone(Object[] xs){
 	return xs.clone();
 }
 
+public static Object reduce(IFn f, Object init, Object coll) {
+	if (coll instanceof IReduce) {
+		return ((IReduce) coll).reduce(f, init);
+	}
+	if (coll instanceof Collection) return reduce(f,init,((Collection<?>) coll).toArray());
+	if (coll instanceof Object[]) return reduce(f,init,(Object[]) coll);
+	return reduceSeq(f,init,RT.seq(coll));
+}
+
+public static Object reduceSeq(IFn f, Object init, ISeq seq) {
+	Object ret=init;
+	while (seq!=null) {
+		ret=f.invoke(init,seq.first());
+		if (RT.isReduced(ret)) return ret;
+		seq=seq.next();
+	}
+	return ret;
+}
+
+
+
+public static Object reduce(IFn f, Object init, Object[] items) {
+	Object ret=init;
+	for (int i=0; i<items.length; i++) {
+		ret=f.invoke(ret,items[i]);
+		if (RT.isReduced(ret)) return ret;
+	}
+	return ret;
+}
+
 
 }

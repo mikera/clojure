@@ -81,7 +81,19 @@
                   @ret
                   (recur ret)))
             ret)))))
-  )
+  
+  clojure.lang.IReduce
+  (coll-reduce
+   ([coll f]
+    (let [ret (.reduce coll f)]
+      (if (reduced? ret)
+        @ret
+        ret)))
+   ([coll f val]
+     (let [ret (.reduce coll f val)]
+        (if (reduced? ret)
+          @ret
+          ret)))))
 
 (extend-protocol InternalReduce
   nil

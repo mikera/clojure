@@ -60,6 +60,19 @@ static public PersistentVector create(List<?> items){
 	return ret.persistent();
 }
 
+private static final IFn conjReducer = new AFn() {
+	@Override
+	public Object invoke(Object acc, Object item) {
+		return ((TransientVector)acc).conj(item);
+	}
+};
+
+static public PersistentVector create(IReduce reducible) {
+	TransientVector ret = EMPTY.asTransient();
+	reducible.reduce(conjReducer, ret);
+	return ret.persistent();
+}
+
 static public PersistentVector create(Iterator<?> items){
 	TransientVector ret = EMPTY.asTransient();
 	while (items.hasNext())

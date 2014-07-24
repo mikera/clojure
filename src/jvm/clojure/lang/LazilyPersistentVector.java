@@ -35,6 +35,7 @@ static public IPersistentVector createOwning(Object... items){
 static public IPersistentVector create(Collection<?> coll){
 	if (coll instanceof IPersistentVector) return (IPersistentVector) coll;
 	if (coll instanceof List) return PersistentVector.create((List<?>) coll);
+	if (coll instanceof IReduce) return PersistentVector.create((IReduce) coll);
 	if (coll instanceof ISeq) return PersistentVector.create((ISeq) coll);
 	return createOwning(coll.toArray());
 }
