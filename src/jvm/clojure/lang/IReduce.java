@@ -12,6 +12,7 @@
 
 package clojure.lang;
 
+// reduces over a collection. Returns either the result, or a Reduced instance containing the result.
 public interface IReduce{
 Object reduce(IFn f) ;
 
