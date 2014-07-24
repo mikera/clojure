@@ -53,10 +53,17 @@ static public PersistentVector create(ISeq items){
 	return ret.persistent();
 }
 
-static public PersistentVector create(List items){
+static public PersistentVector create(List<?> items){
 	TransientVector ret = EMPTY.asTransient();
 	for(Object item : items)
 		ret = ret.conj(item);
+	return ret.persistent();
+}
+
+static public PersistentVector create(Iterator<?> items){
+	TransientVector ret = EMPTY.asTransient();
+	while (items.hasNext())
+		ret = ret.conj(items.next());
 	return ret.persistent();
 }
 
