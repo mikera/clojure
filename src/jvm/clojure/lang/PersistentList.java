@@ -27,7 +27,7 @@ public static IFn creator = new RestFn(){
 	final protected Object doInvoke(Object args) {
 		if(args instanceof ArraySeq)
 			{
-			Object[] argsarray = (Object[]) ((ArraySeq) args).array;
+			Object[] argsarray = ((ArraySeq) args).array;
 			IPersistentList ret = EMPTY;
 			for(int i = argsarray.length - 1; i >= 0; --i)
 				ret = (IPersistentList) ret.cons(argsarray[i]);
@@ -126,10 +126,15 @@ public Object reduce(IFn f, Object start) {
 }
 
 
-    static class EmptyList extends Obj implements IPersistentList, List, ISeq, Counted{
+    static class EmptyList extends Obj implements IPersistentList, List, ISeq, Counted, IHashEq{
+	static final int hasheq = Murmur3.hashOrdered(Collections.EMPTY_LIST);
 
 	public int hashCode(){
 		return 1;
+	}
+
+	public int hasheq(){
+		return hasheq;
 	}
 
     public boolean equals(Object o) {

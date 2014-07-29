@@ -139,7 +139,7 @@
 
 
 (deftest test-cons
-  (is (thrown? Throwable (cons 1 2)))
+  (is (thrown? IllegalArgumentException (cons 1 2)))
   (are [x y] (= x y)
     (cons 1 nil) '(1)
     (cons nil nil) '(nil)
@@ -204,7 +204,7 @@
       1.2 nil
       "abc" nil ))
 
-;Tests that the comparator is preservered
+;Tests that the comparator is preserved
 ;The first element should be the same in each set if preserved.
 (deftest test-empty-sorted
   (let [inv-compare (comp - compare)]
@@ -244,13 +244,13 @@
 
 (deftest test-first
   ;(is (thrown? Exception (first)))
-  (is (thrown? Throwable (first true)))
-  (is (thrown? Throwable (first false)))
-  (is (thrown? Throwable (first 1)))
-  ;(is (thrown? Throwable (first 1 2)))
-  (is (thrown? Throwable (first \a)))
-  (is (thrown? Throwable (first 's)))
-  (is (thrown? Throwable (first :k)))
+  (is (thrown? IllegalArgumentException (first true)))
+  (is (thrown? IllegalArgumentException (first false)))
+  (is (thrown? IllegalArgumentException (first 1)))
+  ;(is (thrown? IllegalArgumentException (first 1 2)))
+  (is (thrown? IllegalArgumentException (first \a)))
+  (is (thrown? IllegalArgumentException (first 's)))
+  (is (thrown? IllegalArgumentException (first :k)))
   (are [x y] (= x y)
     (first nil) nil
 
@@ -310,14 +310,14 @@
 
 
 (deftest test-next
- ; (is (thrown? Throwable (next)))
-  (is (thrown? Throwable (next true)))
-  (is (thrown? Throwable (next false)))
-  (is (thrown? Throwable (next 1)))
-  ;(is (thrown? Throwable (next 1 2)))
-  (is (thrown? Throwable (next \a)))
-  (is (thrown? Throwable (next 's)))
-  (is (thrown? Throwable (next :k)))
+ ; (is (thrown? IllegalArgumentException (next)))
+  (is (thrown? IllegalArgumentException (next true)))
+  (is (thrown? IllegalArgumentException (next false)))
+  (is (thrown? IllegalArgumentException (next 1)))
+  ;(is (thrown? IllegalArgumentException (next 1 2)))
+  (is (thrown? IllegalArgumentException (next \a)))
+  (is (thrown? IllegalArgumentException (next 's)))
+  (is (thrown? IllegalArgumentException (next :k)))
   (are [x y] (= x y)
     (next nil) nil
 
@@ -445,7 +445,7 @@
 ;; (ffirst coll) = (first (first coll))
 ;;
 (deftest test-ffirst
-;  (is (thrown? Throwable (ffirst)))
+;  (is (thrown? IllegalArgumentException (ffirst)))
   (are [x y] (= x y)
     (ffirst nil) nil
 
@@ -465,7 +465,7 @@
 ;; (fnext coll) = (first (next coll)) = (second coll)
 ;;
 (deftest test-fnext
-;  (is (thrown? Throwable (fnext)))
+;  (is (thrown? IllegalArgumentException (fnext)))
   (are [x y] (= x y)
     (fnext nil) nil
 
@@ -489,7 +489,7 @@
 ;; (nfirst coll) = (next (first coll))
 ;;
 (deftest test-nfirst
-;  (is (thrown? Throwable (nfirst)))
+;  (is (thrown? IllegalArgumentException (nfirst)))
   (are [x y] (= x y)
     (nfirst nil) nil
 
@@ -509,7 +509,7 @@
 ;; (nnext coll) = (next (next coll))
 ;;
 (deftest test-nnext
-;  (is (thrown? Throwable (nnext)))
+;  (is (thrown? IllegalArgumentException (nnext)))
   (are [x y] (= x y)
     (nnext nil) nil
 
@@ -881,7 +881,7 @@
 
 
 (deftest test-repeat
-  ;(is (thrown? Throwable (repeat)))
+  ;(is (thrown? IllegalArgumentException (repeat)))
 
   ; infinite sequence => use take
   (are [x y] (= x y)
@@ -1114,10 +1114,10 @@
        [1 2 3 4 5] `(1 2 3 4 5)
        ;maps
        [] {:a 1 :b 2}
-       [:a 1 :b 2] (seq {:a 1 :b 2})
+       [:a 1 :b 2] (sort-by key {:a 1 :b 2})
        [] {[:a :b] 1 :c 2}
-       [:a :b 1 :c 2] (seq {[:a :b] 1 :c 2})
-       [:a 1 2 :b 3] (seq {:a [1 2] :b 3})
+       [:a :b 1 :c 2] (sort-by val {[:a :b] 1 :c 2})
+       [:a 1 2 :b 3] (sort-by key {:a [1 2] :b 3})
        ;Strings
        [] "12345"
        [\1 \2 \3 \4 \5] (seq "12345")
