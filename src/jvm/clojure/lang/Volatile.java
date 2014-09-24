@@ -10,14 +10,20 @@
 
 package clojure.lang;
 
-public final class Reduced implements IDeref{
-Object val;
+final public class Volatile implements IDeref {
 
-public Reduced(Object val){
-	this.val = val;
+volatile Object val;
+
+public Volatile(Object val){
+  this.val = val;
 }
 
-public Object deref(){
-	return val;
+public Object deref() {
+  return val;
 }
+
+public Object reset(Object newval) {
+  return this.val = newval;
+}
+
 }

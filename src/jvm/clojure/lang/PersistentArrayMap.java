@@ -443,11 +443,8 @@ static final class TransientArrayMap extends ATransientMap {
 	}
 
 	void ensureEditable(){
-		if(owner == Thread.currentThread())
-			return;
-		if(owner != null)
-			throw new IllegalAccessError("Transient used by non-owner thread");
-		throw new IllegalAccessError("Transient used after persistent! call");
+		if(owner == null)
+			throw new IllegalAccessError("Transient used after persistent! call");
 	}
 }
 }

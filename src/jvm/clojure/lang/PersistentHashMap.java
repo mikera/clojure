@@ -174,7 +174,7 @@ public IPersistentMap without(Object key){
 }
 
 public Iterator iterator(){
-	return new SeqIterator(seq());
+	return new SeqIterator(this);
 }
 
 public Object kvreduce(IFn f, Object init){
@@ -317,12 +317,8 @@ static final class TransientHashMap extends ATransientMap {
 	}
 	
 	void ensureEditable(){
-		Thread owner = edit.get();
-		if(owner == Thread.currentThread())
-			return;
-		if(owner != null)
-			throw new IllegalAccessError("Transient used by non-owner thread");
-		throw new IllegalAccessError("Transient used after persistent! call");
+		if(edit.get() == null)
+			throw new IllegalAccessError("Transient used after persistent! call");
 	}
 }
 
