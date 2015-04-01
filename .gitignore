@@ -9,3 +9,4 @@ maven-classpath.properties
 /.project
 /.settings
 /classes
+.idea/

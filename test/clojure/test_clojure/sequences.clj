@@ -10,7 +10,8 @@
 ; Contributors: Stuart Halloway
 
 (ns clojure.test-clojure.sequences
-  (:use clojure.test))
+  (:use clojure.test)
+  (:import clojure.lang.IReduce))
 
 ;; *** Tests ***
 
@@ -23,7 +24,7 @@
  
 (deftest test-reduce
   (let [int+ (fn [a b] (+ (int a) (int b)))
-        arange (range 100) ;; enough to cross nodes
+        arange (range 1 100) ;; enough to cross nodes
         avec (into [] arange)
         alist (into () arange)
         obj-array (into-array arange)
@@ -43,6 +44,7 @@
     (is (== 4950
            (reduce + arange)
            (reduce + avec)
+           (.reduce ^IReduce avec +)
            (reduce + alist)
            (reduce + obj-array)
            (reduce + int-array)
@@ -60,6 +62,7 @@
     (is (== 4951
            (reduce + 1 arange)
            (reduce + 1 avec)
+           (.reduce ^IReduce avec + 1)
            (reduce + 1 alist)
            (reduce + 1 obj-array)
            (reduce + 1 int-array)
@@ -77,6 +80,12 @@
     (is (= true
            (reduce #(and %1 %2) all-true)
            (reduce #(and %1 %2) true all-true)))))
+
+(deftest test-into-IReduceInit
+  (let [iri (reify clojure.lang.IReduceInit
+              (reduce [_ f start]
+                (reduce f start (range 5))))]
+    (is (= [0 1 2 3 4] (into [] iri)))))
 
 (deftest test-equality
   ; lazy sequences
@@ -730,7 +739,12 @@
     (take 3 (cycle [1])) '(1 1 1)
     (take 5 (cycle [1 2 3])) '(1 2 3 1 2)
 
-    (take 3 (cycle [nil])) '(nil nil nil) ))
+    (take 3 (cycle [nil])) '(nil nil nil)
+
+    (transduce (take 5) + (cycle [1])) 5
+    (transduce (take 5) + 2 (cycle [1])) 7
+    (transduce (take 5) + (cycle [3 7])) 23
+    (transduce (take 5) + 2 (cycle [3 7])) 25 ))
 
 
 (deftest test-partition
@@ -750,7 +764,35 @@
 
 ;    (partition 0 [1 2 3]) (repeat nil)   ; infinite sequence of nil
     (partition -1 [1 2 3]) ()
-    (partition -2 [1 2 3]) () ))
+    (partition -2 [1 2 3]) () )
+
+    ;; reduce
+    (is (= [1 2 4 8 16] (map #(reduce * (repeat % 2)) (range 5))))
+    (is (= [3 6 12 24 48] (map #(reduce * 3 (repeat % 2)) (range 5))))
+
+    ;; equality and hashing
+    (is (= (repeat 5 :x) (repeat 5 :x)))
+    (is (= (repeat 5 :x) '(:x :x :x :x :x)))
+    (is (= (hash (repeat 5 :x)) (hash '(:x :x :x :x :x))))
+    (is (= (assoc (array-map (repeat 1 :x) :y) '(:x) :z) {'(:x) :z}))
+    (is (= (assoc (hash-map (repeat 1 :x) :y) '(:x) :z) {'(:x) :z})))
+
+
+(deftest test-iterate
+      (are [x y] (= x y)
+           (take 0 (iterate inc 0)) ()
+           (take 1 (iterate inc 0)) '(0)
+           (take 2 (iterate inc 0)) '(0 1)
+           (take 5 (iterate inc 0)) '(0 1 2 3 4) )
+
+      ;; test other fns
+      (is (= '(:foo 42 :foo 42) (take 4 (iterate #(if (= % :foo) 42 :foo) :foo))))
+      (is (= '(1 false true true) (take 4 (iterate #(instance? Boolean %) 1))))
+      (is (= '(256 128 64 32 16 8 4 2 1 0) (take 10 (iterate #(quot % 2) 256))))
+
+      ;; reduce via transduce
+      (is (= (transduce (take 5) + (iterate #(* 2 %) 2)) 62))
+      (is (= (transduce (take 5) + 1 (iterate #(* 2 %) 2)) 63)) )
 
 
 (deftest test-reverse
@@ -923,6 +965,19 @@
       [] [1 2]
       {} {:a 1 :b 2}
       #{} #{1 2} ))
+
+
+(deftest test-iterate
+      (are [x y] (= x y)
+           (take 0 (iterate inc 0)) ()
+           (take 1 (iterate inc 0)) '(0)
+           (take 2 (iterate inc 0)) '(0 1)
+           (take 5 (iterate inc 0)) '(0 1 2 3 4) )
+
+      ; test other fns
+      (is (= '(:foo 42 :foo 42) (take 4 (iterate #(if (= % :foo) 42 :foo) :foo))))
+      (is (= '(1 false true true) (take 4 (iterate #(instance? Boolean %) 1))))
+      (is (= '(256 128 64 32 16 8 4 2 1 0) (take 10 (iterate #(quot % 2) 256)))))
 
 
 (deftest test-range
@@ -1205,3 +1260,14 @@
     (float-array [2.0 -2.5]) [2.0 -2.5]
     (double-array [1.2 -3.5]) [1.2 -3.5]
     (char-array [\H \i]) [\H \i]))
+
+(deftest CLJ-1633
+  (is (= ((fn [& args] (apply (fn [a & b] (apply list b)) args)) 1 2 3) '(2 3))))
+
+(deftest test-subseq
+  (let [s1 (range 100)
+        s2 (into (sorted-set) s1)]
+    (is (= s1 (seq s2)))
+    (doseq [i (range 100)]
+      (is (= s1 (concat (subseq s2 < i) (subseq s2 >= i))))
+      (is (= (reverse s1) (concat (rsubseq s2 >= i) (rsubseq s2 < i)))))))
