@@ -12,7 +12,7 @@ package clojure.lang;
 
 /* Alex Miller, Dec 5, 2014 */
 
-public class Repeat extends ASeq implements IReduce {
+public class Repeat extends ASeq implements IReduce, Indexed {
 
 private static final long INFINITE = -1;
 
@@ -93,6 +93,18 @@ public Object reduce(IFn f, Object start){
         }
         return ret;
     }
+}
+
+@Override
+public Object nth(int i) {
+	if(i >= 0 && i < count) return val;
+	throw new IndexOutOfBoundsException("Out of range: "+i);
+}
+
+@Override
+public Object nth(int i, Object notFound){
+	if(i >= 0 &&  i < count) return val;
+	return notFound;
 }
 
 }
