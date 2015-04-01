@@ -82,8 +82,15 @@ public Object reduce(IFn f, Object start){
 
 @Override
 public Object nth(int i) {
-	if(i >= 0) return RT.nth(current, i);
-	throw new IndexOutOfBoundsException("Out of range: "+i);
+	if (i<0) throw new IndexOutOfBoundsException("Out of range: "+i);
+	if (current instanceof Counted) {
+		int c=((Counted)current).count();
+		if (i < c) return RT.nth(current, i);
+		if (all instanceof Counted) {
+			return RT.nth(all, (i-c) % ((Counted)all).count());
+		}
+	} 
+	return RT.nthFrom(this, i);
 }
 
 @Override

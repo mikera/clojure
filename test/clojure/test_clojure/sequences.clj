@@ -740,6 +740,9 @@
     (take 5 (cycle [1 2 3])) '(1 2 3 1 2)
 
     (take 3 (cycle [nil])) '(nil nil nil)
+    
+    (nth (cycle (range 5)) 13) 3
+    (nth (next (cycle (range 5))) 13) 4
 
     (transduce (take 5) + (cycle [1])) 5
     (transduce (take 5) + 2 (cycle [1])) 7
