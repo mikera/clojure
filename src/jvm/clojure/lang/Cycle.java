@@ -12,7 +12,7 @@ package clojure.lang;
 
 /* Alex Miller, Dec 5, 2014 */
 
-public class Cycle extends ASeq implements IReduce {
+public class Cycle extends ASeq implements IReduce, Indexed {
 
 private final ISeq all;      // never null
 private final ISeq current;  // never null
@@ -79,4 +79,17 @@ public Object reduce(IFn f, Object start){
             s = all;
     }
 }
+
+@Override
+public Object nth(int i) {
+	if(i >= 0) return RT.nth(current, i);
+	throw new IndexOutOfBoundsException("Out of range: "+i);
+}
+
+@Override
+public Object nth(int i, Object notFound){
+	if(i >= 0) return nth(i);
+	return notFound;
+}
+
 }
