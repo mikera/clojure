@@ -12,7 +12,7 @@
 
 package clojure.lang;
 
-public class Range extends ASeq implements IReduce, Counted{
+public class Range extends ASeq implements IReduce, Counted, Indexed {
 final int end;
 final int n;
 
@@ -60,5 +60,17 @@ public Object reduce(IFn f, Object start) {
 public int count() {
     return end - n;
     }
+
+@Override
+public Object nth(int i) {
+	if(i >= 0 && n+i < end) return n+i;
+	throw new IndexOutOfBoundsException("Out of range: "+i);
+}
+
+@Override
+public Object nth(int i, Object notFound){
+	if(i >= 0 && n+i < end) return n+i;
+	return notFound;
+}
 
 }
