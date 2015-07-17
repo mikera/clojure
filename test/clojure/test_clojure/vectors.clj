@@ -300,7 +300,7 @@
       (are [x] (not (contains? empty-v x))
            0 1))
     (testing "Associative.entryAt"
-      (are [idx val] (= (clojure.lang.MapEntry. idx val)
+      (are [idx val] (= [idx val]
                         (.entryAt v idx))
            0 1
            2 3

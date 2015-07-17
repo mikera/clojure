@@ -425,8 +425,7 @@
   (testing "that constructor calls to print-dup'able classes are supported as literals"
     (is (= "Hi" #java.lang.String["Hi"]))
     (is (= 42 #java.lang.Long[42]))
-    (is (= 42 #java.lang.Long["42"]))
-    (is (= [:a 42] #clojure.lang.MapEntry[:a 42])))
+    (is (= 42 #java.lang.Long["42"])))
   (testing "that constructor literals are embeddable"
     (is (= 42 #java.lang.Long[#java.lang.String["42"]])))
   (testing "that constructor literals work for deftypes too"
