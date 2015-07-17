@@ -936,7 +936,7 @@ public static class SyntaxQuoteReader extends AFn{
 	}
 
 	private static ISeq sqExpandList(ISeq seq) {
-		PersistentVector ret = PersistentVector.EMPTY;
+		IPersistentVector ret = RT.EMPTY_VECTOR;
 		for(; seq != null; seq = seq.next())
 			{
 			Object item = seq.first();
@@ -951,7 +951,7 @@ public static class SyntaxQuoteReader extends AFn{
 	}
 
 	private static IPersistentVector flattenMap(Object form){
-		IPersistentVector keyvals = PersistentVector.EMPTY;
+		IPersistentVector keyvals = RT.EMPTY_VECTOR;
 		for(ISeq s = RT.seq(form); s != null; s = s.next())
 			{
 			IMapEntry e = (IMapEntry) s.first();
