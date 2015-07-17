@@ -111,7 +111,7 @@ public class Tuple {
     }
     
     
-    public static class T0 extends ATuple implements IObj,
+    public static final class T0 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 
 	public T0() {
@@ -218,7 +218,7 @@ public class Tuple {
 	}
     }
 
-    public static class T1 extends ATuple implements IObj,
+    public static final class T1 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 
@@ -398,7 +398,7 @@ public class Tuple {
 	}
     }
 
-    public static class T2 extends ATuple implements IObj,
+    public static final class T2 extends ATuple implements IObj,
 	    IEditableCollection, IReduce, IMapEntry {
 	final Object e0;
 	final Object e1;
@@ -623,7 +623,7 @@ public class Tuple {
 	}
     }
 
-    public static class T3 extends ATuple implements IObj,
+    public static final class T3 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
@@ -852,7 +852,7 @@ public class Tuple {
 	}
     }
 
-    public static class T4 extends ATuple implements IObj,
+    public static final class T4 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
@@ -1105,7 +1105,7 @@ public class Tuple {
 	}
     }
 
-    public static class T5 extends ATuple implements IObj,
+    public static final class T5 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
@@ -1382,7 +1382,7 @@ public class Tuple {
 	}
     }
 
-    public static class T6 extends ATuple implements IObj,
+    public static final class T6 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
