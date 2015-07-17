@@ -3226,7 +3226,7 @@ public static class VectorExpr implements Expr{
 					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
 		else if (constant)
 			{
-			IPersistentVector rv = Tuple.EMPTY;
+			IPersistentVector rv = RT.EMPTY_VECTOR;
 			for(int i =0;i<args.count();i++)
 				{
 				LiteralExpr ve = (LiteralExpr)args.nth(i);

@@ -1559,7 +1559,7 @@ static public IPersistentVector subvec(IPersistentVector v, int start, int end){
 	if(end < start || start < 0 || end > v.count())
 		throw new IndexOutOfBoundsException();
 	if(start == end)
-		return Tuple.EMPTY;
+		return RT.EMPTY_VECTOR;
 	return new APersistentVector.SubVector(null, v, start, end);
 }
 
