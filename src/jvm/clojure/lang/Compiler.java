@@ -2239,7 +2239,7 @@ public static class TryExpr implements Expr{
 			ISeq form = (ISeq) frm;
 //			if(context == C.EVAL || context == C.EXPRESSION)
 			if(context != C.RETURN)
-				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, RT.EMPTY_VECTOR, form)));
 
 			//(try try-expr* catch-expr* finally-expr?)
 			//catch-expr: (catch class sym expr*)
@@ -2415,7 +2415,7 @@ static class ThrowExpr extends UntypedExpr{
 	static class Parser implements IParser{
 		public Expr parse(C context, Object form) {
 			if(context == C.EVAL)
-				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, RT.EMPTY_VECTOR, form)));
 			return new ThrowExpr(analyze(C.EXPRESSION, RT.second(form)));
 		}
 	}
@@ -2619,7 +2619,7 @@ public static class NewExpr implements Expr{
 			Class c = HostExpr.maybeClass(RT.second(form), false);
 			if(c == null)
 				throw new IllegalArgumentException("Unable to resolve classname: " + RT.second(form));
-			PersistentVector args = PersistentVector.EMPTY;
+			IPersistentVector args = RT.EMPTY_VECTOR;
 			for(ISeq s = RT.next(RT.next(form)); s != null; s = s.next())
 				args = args.cons(analyze(context == C.EVAL ? context : C.EXPRESSION, s.first()));
 			return new NewExpr(c, args, line, column);
@@ -2973,7 +2973,7 @@ public static class ListExpr implements Expr{
 	}
 
 	public Object eval() {
-		IPersistentVector ret = PersistentVector.EMPTY;
+		IPersistentVector ret = RT.EMPTY_VECTOR;
 		for(int i = 0; i < args.count(); i++)
 			ret = (IPersistentVector) ret.cons(((Expr) args.nth(i)).eval());
 		return ret.seq();
@@ -3050,7 +3050,7 @@ public static class MapExpr implements Expr{
 
 
 	static public Expr parse(C context, IPersistentMap form) {
-		IPersistentVector keyvals = PersistentVector.EMPTY;
+		IPersistentVector keyvals = RT.EMPTY_VECTOR;
 		boolean keysConstant = true;
 		boolean valsConstant = true;
 		boolean allConstantKeysUnique = true;
@@ -3136,7 +3136,7 @@ public static class SetExpr implements Expr{
 
 
 	static public Expr parse(C context, IPersistentSet form) {
-		IPersistentVector keys = PersistentVector.EMPTY;
+		IPersistentVector keys = RT.EMPTY_VECTOR;
 		boolean constant = true;
 
 		for(ISeq s = RT.seq(form); s != null; s = s.next())
@@ -3176,7 +3176,7 @@ public static class VectorExpr implements Expr{
 	}
 
 	public Object eval() {
-		IPersistentVector ret = PersistentVector.EMPTY;
+		IPersistentVector ret = RT.EMPTY_VECTOR;
 		for(int i = 0; i < args.count(); i++)
 			ret = (IPersistentVector) ret.cons(((Expr) args.nth(i)).eval());
 		return ret;
@@ -3212,7 +3212,7 @@ public static class VectorExpr implements Expr{
 	static public Expr parse(C context, IPersistentVector form) {
 		boolean constant = true;
 
-		IPersistentVector args = PersistentVector.EMPTY;
+		IPersistentVector args = RT.EMPTY_VECTOR;
 		for(int i = 0; i < form.count(); i++)
 			{
 			Expr v = analyze(context == C.EVAL ? context : C.EXPRESSION, form.nth(i));
@@ -3555,7 +3555,7 @@ static class StaticInvokeExpr implements Expr, MaybePrimitiveExpr{
 		String cname = v.ns.name.name.replace('.', '/').replace('-','_') + "$" + munge(v.sym.name);
 		Type target = Type.getObjectType(cname);
 
-		PersistentVector argv = PersistentVector.EMPTY;
+		IPersistentVector argv = RT.EMPTY_VECTOR;
 		for(ISeq s = RT.seq(args); s != null; s = s.next())
 			argv = argv.cons(analyze(C.EXPRESSION, s.first()));
 
@@ -3917,12 +3917,12 @@ static public class FnExpr extends ObjExpr{
 		try
 			{
 			Var.pushThreadBindings(
-					RT.mapUniqueKeys(CONSTANTS, PersistentVector.EMPTY,
+					RT.mapUniqueKeys(CONSTANTS, RT.EMPTY_VECTOR,
 					       CONSTANT_IDS, new IdentityHashMap(),
 					       KEYWORDS, PersistentHashMap.EMPTY,
 					       VARS, PersistentHashMap.EMPTY,
-					       KEYWORD_CALLSITES, PersistentVector.EMPTY,
-					       PROTOCOL_CALLSITES, PersistentVector.EMPTY,
+					       KEYWORD_CALLSITES, RT.EMPTY_VECTOR,
+					       PROTOCOL_CALLSITES, RT.EMPTY_VECTOR,
 					       VAR_CALLSITES, emptyVarCallSites(),
                                                NO_RECUR, null
 					));
@@ -3981,7 +3981,7 @@ static public class FnExpr extends ObjExpr{
 			fn.variadicMethod = variadicMethod;
 			fn.keywords = (IPersistentMap) KEYWORDS.deref();
 			fn.vars = (IPersistentMap) VARS.deref();
-			fn.constants = (PersistentVector) CONSTANTS.deref();
+			fn.constants = (IPersistentVector) CONSTANTS.deref();
 			fn.keywordCallsites = (IPersistentVector) KEYWORD_CALLSITES.deref();
 			fn.protocolCallsites = (IPersistentVector) PROTOCOL_CALLSITES.deref();
 			fn.varCallsites = (IPersistentSet) VAR_CALLSITES.deref();
@@ -4065,7 +4065,7 @@ static public class ObjExpr implements Expr{
 	//localbinding->itself
 	IPersistentMap closes = PersistentHashMap.EMPTY;
     //localbndingexprs
-    IPersistentVector closesExprs = PersistentVector.EMPTY;
+    IPersistentVector closesExprs = RT.EMPTY_VECTOR;
 	//symbols
 	IPersistentSet volatiles = PersistentHashSet.EMPTY;
 
@@ -4073,7 +4073,7 @@ static public class ObjExpr implements Expr{
 	IPersistentMap fields = null;
 
 	//hinted fields
-	IPersistentVector hintedFields = PersistentVector.EMPTY;
+	IPersistentVector hintedFields = RT.EMPTY_VECTOR;
 
 	//Keyword->KeywordExpr
 	IPersistentMap keywords = PersistentHashMap.EMPTY;
@@ -4081,7 +4081,7 @@ static public class ObjExpr implements Expr{
 	Class compiledClass;
 	int line;
 	int column;
-	PersistentVector constants;
+	IPersistentVector constants;
 	int constantsID;
 	int altCtorDrops = 0;
 
@@ -4140,7 +4140,7 @@ static public class ObjExpr implements Expr{
 		return column;
 	}
 
-	public final PersistentVector constants(){
+	public final IPersistentVector constants(){
 		return constants;
 	}
 
@@ -4178,7 +4178,7 @@ static public class ObjExpr implements Expr{
 
 
 	Type[] ctorTypes(){
-		IPersistentVector tv = !supportsMeta()?PersistentVector.EMPTY:RT.vector(IPERSISTENTMAP_TYPE);
+		IPersistentVector tv = !supportsMeta()?RT.EMPTY_VECTOR:RT.vector(IPERSISTENTMAP_TYPE);
 		for(ISeq s = RT.keys(closes); s != null; s = s.next())
 			{
 			LocalBinding lb = (LocalBinding) s.first();
@@ -5993,7 +5993,7 @@ public static class LetFnExpr implements Expr{
 			ISeq body = RT.next(RT.next(form));
 
 			if(context == C.EVAL)
-				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, RT.EMPTY_VECTOR, form)));
 
 			IPersistentMap dynamicBindings = RT.map(LOCAL_ENV, LOCAL_ENV.deref(),
 			                                        NEXT_LOCAL_NUM, NEXT_LOCAL_NUM.deref());
@@ -6122,7 +6122,7 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 
 			if(context == C.EVAL
 			   || (context == C.EXPRESSION && isLoop))
-				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, RT.EMPTY_VECTOR, form)));
 
 			ObjMethod method = (ObjMethod) METHOD.deref();
 			IPersistentMap backupMethodLocals = method.locals;
@@ -6436,7 +6436,7 @@ public static class RecurExpr implements Expr, MaybePrimitiveExpr{
 				throw new UnsupportedOperationException("Can only recur from tail position");
                         if(NO_RECUR.deref() != null)
                             throw new UnsupportedOperationException("Cannot recur across try");
-			PersistentVector args = PersistentVector.EMPTY;
+			IPersistentVector args = RT.EMPTY_VECTOR;
 			for(ISeq s = RT.seq(form.next()); s != null; s = s.next())
 				{
 				args = args.cons(analyze(C.EXPRESSION, s.first()));
@@ -6810,7 +6810,7 @@ public static Object eval(Object form, boolean freshLoader) {
 					&& !(RT.first(form) instanceof Symbol
 						&& ((Symbol) RT.first(form)).name.startsWith("def"))))
 				{
-				ObjExpr fexpr = (ObjExpr) analyze(C.EXPRESSION, RT.list(FN, PersistentVector.EMPTY, form),
+				ObjExpr fexpr = (ObjExpr) analyze(C.EXPRESSION, RT.list(FN, RT.EMPTY_VECTOR, form),
 													"eval" + RT.nextID());
 				IFn fn = (IFn) fexpr.eval();
 				return fn.invoke();
@@ -6837,7 +6837,7 @@ public static Object eval(Object form, boolean freshLoader) {
 private static int registerConstant(Object o){
 	if(!CONSTANTS.isBound())
 		return -1;
-	PersistentVector v = (PersistentVector) CONSTANTS.deref();
+	IPersistentVector v = (IPersistentVector) CONSTANTS.deref();
 	IdentityHashMap<Object,Integer> ids = (IdentityHashMap<Object,Integer>) CONSTANT_IDS.deref();
 	Integer i = ids.get(o);
 	if(i != null)
@@ -7352,7 +7352,7 @@ static void compile1(GeneratorAdapter gen, ObjExpr objx, Object form) {
 			Expr expr = analyze(C.EVAL, form);
 			objx.keywords = (IPersistentMap) KEYWORDS.deref();
 			objx.vars = (IPersistentMap) VARS.deref();
-			objx.constants = (PersistentVector) CONSTANTS.deref();
+			objx.constants = (IPersistentVector) CONSTANTS.deref();
 			expr.emit(C.EXPRESSION, objx, gen);
 			expr.eval();
 			}
@@ -7385,7 +7385,7 @@ public static Object compile(Reader rdr, String sourcePath, String sourceName) t
 			       COLUMN_BEFORE, pushbackReader.getColumnNumber(),
 			       LINE_AFTER, pushbackReader.getLineNumber(),
 			       COLUMN_AFTER, pushbackReader.getColumnNumber(),
-			       CONSTANTS, PersistentVector.EMPTY,
+			       CONSTANTS, RT.EMPTY_VECTOR,
 			       CONSTANT_IDS, new IdentityHashMap(),
 			       KEYWORDS, PersistentHashMap.EMPTY,
 			       VARS, PersistentHashMap.EMPTY
@@ -7554,7 +7554,7 @@ static public class NewInstanceExpr extends ObjExpr{
 				rform = rform.next().next();
 				}
 
-			ObjExpr ret = build((IPersistentVector)RT.get(opts,implementsKey,PersistentVector.EMPTY),fields,null,tagname, classname,
+			ObjExpr ret = build((IPersistentVector)RT.get(opts,implementsKey,RT.EMPTY_VECTOR),fields,null,tagname, classname,
 			             (Symbol) RT.get(opts,RT.TAG_KEY),rform, frm);
 			return ret;
 		}
@@ -7626,7 +7626,7 @@ static public class NewInstanceExpr extends ObjExpr{
 		//todo - set up volatiles
 //		ret.volatiles = PersistentHashSet.create(RT.seq(RT.get(ret.optionsMap, volatileKey)));
 
-		PersistentVector interfaces = PersistentVector.EMPTY;
+		IPersistentVector interfaces = RT.EMPTY_VECTOR;
 		for(ISeq s = RT.seq(interfaceSyms);s!=null;s = s.next())
 			{
 			Class c = (Class) resolve((Symbol) s.first());
@@ -8572,7 +8572,7 @@ public static class CaseExpr implements Expr, MaybePrimitiveExpr{
 		public Expr parse(C context, Object frm) {
 			ISeq form = (ISeq) frm;
 			if(context == C.EVAL)
-				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, RT.EMPTY_VECTOR, form)));
 			IPersistentVector args = LazilyPersistentVector.create(form.next());
 
 			Object exprForm = args.nth(0);
