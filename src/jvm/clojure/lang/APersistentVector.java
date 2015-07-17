@@ -586,7 +586,7 @@ public static class SubVector extends APersistentVector implements IObj{
 	public IPersistentStack pop(){
 		if(end - 1 == start)
 			{
-			return PersistentVector.EMPTY;
+			return PersistentVector.EMPTY.withMeta(meta());
 			}
 		return new SubVector(_meta, v, start, end - 1);
 	}

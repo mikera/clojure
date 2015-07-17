@@ -105,7 +105,7 @@ static class Action implements Runnable{
 	static void doRun(Action action){
 		try
 			{
-			nested.set(PersistentVector.EMPTY);
+			nested.set(RT.EMPTY_VECTOR);
 
 			Throwable error = null;
 			try
@@ -281,7 +281,7 @@ static public int releasePendingSends(){
 		Action a = (Action) sends.valAt(i);
 		a.agent.enqueue(a);
 		}
-	nested.set(PersistentVector.EMPTY);
+	nested.set(RT.EMPTY_VECTOR);
 	return sends.count();
 }
 }

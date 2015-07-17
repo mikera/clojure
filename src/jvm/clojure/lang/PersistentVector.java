@@ -206,6 +206,7 @@ public int count(){
 }
 
 public PersistentVector withMeta(IPersistentMap meta){
+	if (meta==_meta) return this;
 	return new PersistentVector(meta, cnt, shift, root, tail);
 }
 
