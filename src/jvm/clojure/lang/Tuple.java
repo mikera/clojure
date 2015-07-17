@@ -94,25 +94,27 @@ public class Tuple {
            }
         throw new IllegalAccessError("Too large an array for tuple");
     }
+    
+    static public abstract class ATuple extends APersistentVector implements IObj, IEditableCollection{
+        PersistentVector vec(){
+            return PersistentVector.adopt(toArray());
+        }
 
-    public static class T0 extends APersistentVector implements IObj,
+        public IObj withMeta(IPersistentMap meta){
+            if (meta==null) return this;
+        	return vec().withMeta(meta);
+        }
+
+        public IPersistentMap meta(){
+            return null;
+        }
+    }
+    
+
+    public static class T0 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
-	private final IPersistentMap meta;
-
-	T0(IPersistentMap meta) {
-	    this.meta = meta;
-	}
 
 	public T0() {
-	    this.meta = null;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T0(meta);
 	}
 
 	public Object nth(int i) {
@@ -141,7 +143,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new T1(meta, val);
+	    return new T1(val);
 	}
 
 	public ITransientCollection asTransient() {
@@ -216,27 +218,12 @@ public class Tuple {
 	}
     }
 
-    public static class T1 extends APersistentVector implements IObj,
+    public static class T1 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
-	private final IPersistentMap meta;
-
-	T1(IPersistentMap meta, Object e0) {
-	    this.meta = meta;
-	    this.e0 = e0;
-	}
 
 	public T1(Object e0) {
-	    this.meta = null;
 	    this.e0 = e0;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T1(meta, e0);
 	}
 
 	public Object nth(int i) {
@@ -268,7 +255,7 @@ public class Tuple {
 	public IPersistentVector assocN(int i, Object val) {
 	    switch (i) {
 	    case 0:
-		return new T1(meta, val);
+		return new T1(val);
 	    case 1:
 		return cons(val);
 	    default:
@@ -277,7 +264,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new T2(meta, e0, val);
+	    return new T2(e0, val);
 	}
 
 	public ITransientCollection asTransient() {
@@ -285,7 +272,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return new T0(meta);
+	    return new T0();
 	}
 
 	public Object kvreduce(IFn f, Object init) {
@@ -411,11 +398,10 @@ public class Tuple {
 	}
     }
 
-    public static class T2 extends APersistentVector implements IObj,
+    public static class T2 extends ATuple implements IObj,
 	    IEditableCollection, IReduce, IMapEntry {
 	final Object e0;
 	final Object e1;
-	private final IPersistentMap meta;
 
 	public Object key() {
 	    return e0;
@@ -437,24 +423,9 @@ public class Tuple {
 	    throw new UnsupportedOperationException();
 	}
 
-	T2(IPersistentMap meta, Object e0, Object e1) {
-	    this.meta = meta;
-	    this.e0 = e0;
-	    this.e1 = e1;
-	}
-
 	public T2(Object e0, Object e1) {
-	    this.meta = null;
 	    this.e0 = e0;
 	    this.e1 = e1;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T2(meta, e0, e1);
 	}
 
 	public Object nth(int i) {
@@ -490,9 +461,9 @@ public class Tuple {
 	public IPersistentVector assocN(int i, Object val) {
 	    switch (i) {
 	    case 0:
-		return new T2(meta, val, e1);
+		return new T2(val, e1);
 	    case 1:
-		return new T2(meta, e0, val);
+		return new T2(e0, val);
 	    case 2:
 		return cons(val);
 	    default:
@@ -501,7 +472,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new T3(meta, e0, e1, val);
+	    return new T3(e0, e1, val);
 	}
 
 	public ITransientCollection asTransient() {
@@ -509,7 +480,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return new T1(meta, e0);
+	    return new T1(e0);
 	}
 
 	public Object kvreduce(IFn f, Object init) {
@@ -652,7 +623,7 @@ public class Tuple {
 	}
     }
 
-    public static class T3 extends APersistentVector implements IObj,
+    public static class T3 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
@@ -739,7 +710,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return new T2(meta, e0, e1);
+	    return (IPersistentVector) new T2(e0, e1).withMeta(meta);
 	}
 
 	public Object kvreduce(IFn f, Object init) {
@@ -898,7 +869,7 @@ public class Tuple {
 	}
     }
 
-    public static class T4 extends APersistentVector implements IObj,
+    public static class T4 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
@@ -1169,7 +1140,7 @@ public class Tuple {
 	}
     }
 
-    public static class T5 extends APersistentVector implements IObj,
+    public static class T5 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
@@ -1466,7 +1437,7 @@ public class Tuple {
 	}
     }
 
-    public static class T6 extends APersistentVector implements IObj,
+    public static class T6 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 	final Object e0;
 	final Object e1;
