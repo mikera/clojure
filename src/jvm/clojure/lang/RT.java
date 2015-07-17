@@ -272,6 +272,7 @@ public static PrintWriter errPrintWriter(){
 }
 
 static public final Object[] EMPTY_ARRAY = new Object[]{};
+static public final IPersistentVector EMPTY_VECTOR = Tuple.EMPTY;
 static public final Comparator DEFAULT_COMPARATOR = new DefaultComparator();
 
 private static final class DefaultComparator implements Comparator, Serializable {
