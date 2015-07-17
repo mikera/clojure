@@ -100,17 +100,17 @@ public class Tuple {
             return PersistentVector.adopt(toArray());
         }
 
-        public IObj withMeta(IPersistentMap meta){
+        public final IObj withMeta(IPersistentMap meta){
             if (meta==null) return this;
         	return vec().withMeta(meta);
         }
 
-        public IPersistentMap meta(){
+        public final IPersistentMap meta(){
             return null;
         }
     }
     
-
+    
     public static class T0 extends ATuple implements IObj,
 	    IEditableCollection, IReduce {
 
@@ -628,28 +628,11 @@ public class Tuple {
 	final Object e0;
 	final Object e1;
 	final Object e2;
-	private final IPersistentMap meta;
-
-	T3(IPersistentMap meta, Object e0, Object e1, Object e2) {
-	    this.meta = meta;
-	    this.e0 = e0;
-	    this.e1 = e1;
-	    this.e2 = e2;
-	}
 
 	public T3(Object e0, Object e1, Object e2) {
-	    this.meta = null;
 	    this.e0 = e0;
 	    this.e1 = e1;
 	    this.e2 = e2;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T3(meta, e0, e1, e2);
 	}
 
 	public Object nth(int i) {
@@ -689,11 +672,11 @@ public class Tuple {
 	public IPersistentVector assocN(int i, Object val) {
 	    switch (i) {
 	    case 0:
-		return new T3(meta, val, e1, e2);
+		return new T3(val, e1, e2);
 	    case 1:
-		return new T3(meta, e0, val, e2);
+		return new T3(e0, val, e2);
 	    case 2:
-		return new T3(meta, e0, e1, val);
+		return new T3(e0, e1, val);
 	    case 3:
 		return cons(val);
 	    default:
@@ -702,7 +685,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new T4(meta, e0, e1, e2, val);
+	    return new T4(e0, e1, e2, val);
 	}
 
 	public ITransientCollection asTransient() {
@@ -710,7 +693,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return (IPersistentVector) new T2(e0, e1).withMeta(meta);
+	    return (IPersistentVector) new T2(e0, e1);
 	}
 
 	public Object kvreduce(IFn f, Object init) {
@@ -875,30 +858,12 @@ public class Tuple {
 	final Object e1;
 	final Object e2;
 	final Object e3;
-	private final IPersistentMap meta;
-
-	T4(IPersistentMap meta, Object e0, Object e1, Object e2, Object e3) {
-	    this.meta = meta;
-	    this.e0 = e0;
-	    this.e1 = e1;
-	    this.e2 = e2;
-	    this.e3 = e3;
-	}
 
 	public T4(Object e0, Object e1, Object e2, Object e3) {
-	    this.meta = null;
 	    this.e0 = e0;
 	    this.e1 = e1;
 	    this.e2 = e2;
 	    this.e3 = e3;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T4(meta, e0, e1, e2, e3);
 	}
 
 	public Object nth(int i) {
@@ -942,13 +907,13 @@ public class Tuple {
 	public IPersistentVector assocN(int i, Object val) {
 	    switch (i) {
 	    case 0:
-		return new T4(meta, val, e1, e2, e3);
+		return new T4(val, e1, e2, e3);
 	    case 1:
-		return new T4(meta, e0, val, e2, e3);
+		return new T4(e0, val, e2, e3);
 	    case 2:
-		return new T4(meta, e0, e1, val, e3);
+		return new T4(e0, e1, val, e3);
 	    case 3:
-		return new T4(meta, e0, e1, e2, val);
+		return new T4(e0, e1, e2, val);
 	    case 4:
 		return cons(val);
 	    default:
@@ -957,7 +922,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new T5(meta, e0, e1, e2, e3, val);
+	    return new T5(e0, e1, e2, e3, val);
 	}
 
 	public ITransientCollection asTransient() {
@@ -965,7 +930,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return new T3(meta, e0, e1, e2);
+	    return new T3(e0, e1, e2);
 	}
 
 	public Object kvreduce(IFn f, Object init) {
@@ -1147,33 +1112,13 @@ public class Tuple {
 	final Object e2;
 	final Object e3;
 	final Object e4;
-	private final IPersistentMap meta;
-
-	T5(IPersistentMap meta, Object e0, Object e1, Object e2, Object e3,
-		Object e4) {
-	    this.meta = meta;
-	    this.e0 = e0;
-	    this.e1 = e1;
-	    this.e2 = e2;
-	    this.e3 = e3;
-	    this.e4 = e4;
-	}
 
 	public T5(Object e0, Object e1, Object e2, Object e3, Object e4) {
-	    this.meta = null;
 	    this.e0 = e0;
 	    this.e1 = e1;
 	    this.e2 = e2;
 	    this.e3 = e3;
 	    this.e4 = e4;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T5(meta, e0, e1, e2, e3, e4);
 	}
 
 	public Object nth(int i) {
@@ -1221,15 +1166,15 @@ public class Tuple {
 	public IPersistentVector assocN(int i, Object val) {
 	    switch (i) {
 	    case 0:
-		return new T5(meta, val, e1, e2, e3, e4);
+		return new T5(val, e1, e2, e3, e4);
 	    case 1:
-		return new T5(meta, e0, val, e2, e3, e4);
+		return new T5(e0, val, e2, e3, e4);
 	    case 2:
-		return new T5(meta, e0, e1, val, e3, e4);
+		return new T5(e0, e1, val, e3, e4);
 	    case 3:
-		return new T5(meta, e0, e1, e2, val, e4);
+		return new T5(e0, e1, e2, val, e4);
 	    case 4:
-		return new T5(meta, e0, e1, e2, e3, val);
+		return new T5(e0, e1, e2, e3, val);
 	    case 5:
 		return cons(val);
 	    default:
@@ -1238,7 +1183,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new T6(meta, e0, e1, e2, e3, e4, val);
+	    return new T6(e0, e1, e2, e3, e4, val);
 	}
 
 	public ITransientCollection asTransient() {
@@ -1246,7 +1191,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return new T4(meta, e0, e1, e2, e3);
+	    return new T4(e0, e1, e2, e3);
 	}
 
 	public Object kvreduce(IFn f, Object init) {
@@ -1445,36 +1390,15 @@ public class Tuple {
 	final Object e3;
 	final Object e4;
 	final Object e5;
-	private final IPersistentMap meta;
-
-	T6(IPersistentMap meta, Object e0, Object e1, Object e2, Object e3,
-		Object e4, Object e5) {
-	    this.meta = meta;
-	    this.e0 = e0;
-	    this.e1 = e1;
-	    this.e2 = e2;
-	    this.e3 = e3;
-	    this.e4 = e4;
-	    this.e5 = e5;
-	}
 
 	public T6(Object e0, Object e1, Object e2, Object e3, Object e4,
 		Object e5) {
-	    this.meta = null;
 	    this.e0 = e0;
 	    this.e1 = e1;
 	    this.e2 = e2;
 	    this.e3 = e3;
 	    this.e4 = e4;
 	    this.e5 = e5;
-	}
-
-	public IPersistentMap meta() {
-	    return meta;
-	}
-
-	public IObj withMeta(IPersistentMap meta) {
-	    return new T6(meta, e0, e1, e2, e3, e4, e5);
 	}
 
 	public Object nth(int i) {
@@ -1526,17 +1450,17 @@ public class Tuple {
 	public IPersistentVector assocN(int i, Object val) {
 	    switch (i) {
 	    case 0:
-		return new T6(meta, val, e1, e2, e3, e4, e5);
+		return new T6(val, e1, e2, e3, e4, e5);
 	    case 1:
-		return new T6(meta, e0, val, e2, e3, e4, e5);
+		return new T6(e0, val, e2, e3, e4, e5);
 	    case 2:
-		return new T6(meta, e0, e1, val, e3, e4, e5);
+		return new T6(e0, e1, val, e3, e4, e5);
 	    case 3:
-		return new T6(meta, e0, e1, e2, val, e4, e5);
+		return new T6(e0, e1, e2, val, e4, e5);
 	    case 4:
-		return new T6(meta, e0, e1, e2, e3, val, e5);
+		return new T6(e0, e1, e2, e3, val, e5);
 	    case 5:
-		return new T6(meta, e0, e1, e2, e3, e4, val);
+		return new T6(e0, e1, e2, e3, e4, val);
 	    case 6:
 		return cons(val);
 	    default:
@@ -1545,7 +1469,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector cons(Object val) {
-	    return new PersistentVector(meta, 7, 5,
+	    return new PersistentVector(null, 7, 5,
 		    PersistentVector.EMPTY_NODE, new Object[] { e0, e1, e2, e3,
 			    e4, e5, val });
 	}
@@ -1555,7 +1479,7 @@ public class Tuple {
 	}
 
 	public IPersistentVector pop() {
-	    return new T5(meta, e0, e1, e2, e3, e4);
+	    return new T5(e0, e1, e2, e3, e4);
 	}
 
 	public Object kvreduce(IFn f, Object init) {
