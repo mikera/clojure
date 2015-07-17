@@ -154,7 +154,8 @@ final static Type BOOLEAN_OBJECT_TYPE = Type.getType(Boolean.class);
 final static Type IPERSISTENTMAP_TYPE = Type.getType(IPersistentMap.class);
 final static Type IOBJ_TYPE = Type.getType(IObj.class);
 final static Type TUPLE_TYPE = Type.getType(Tuple.class);
-final static Method createTupleMethods[] = {Method.getMethod("clojure.lang.IPersistentVector create()"),
+final static Method createTupleMethods[] = {
+		Method.getMethod("clojure.lang.IPersistentVector create()"),
         Method.getMethod("clojure.lang.Tuple$T1 create(Object)"),
         Method.getMethod("clojure.lang.Tuple$T2 create(Object,Object)"),
         Method.getMethod("clojure.lang.Tuple$T3 create(Object,Object,Object)"),
