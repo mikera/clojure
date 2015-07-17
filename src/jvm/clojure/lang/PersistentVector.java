@@ -425,7 +425,9 @@ static public final class ChunkedSeq extends ASeq implements IChunkedSeq,Counted
 }
 
 public IPersistentCollection empty(){
-	return EMPTY.withMeta(meta());
+	IPersistentMap meta=meta();
+	if (meta==null) return Tuple.EMPTY;
+	return EMPTY.withMeta(meta);
 }
 
 //private Node pushTail(int level, Node node, Object[] tailNode, Box expansion){
