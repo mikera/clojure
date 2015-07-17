@@ -708,7 +708,7 @@ public static class FnReader extends AFn{
 			unread(r, '(');
 			Object form = read(r, true, null, true, opts, ensurePending(pendingForms));
 
-			PersistentVector args = PersistentVector.EMPTY;
+			IPersistentVector args = RT.EMPTY_VECTOR;
 			PersistentTreeMap argsyms = (PersistentTreeMap) ARG_ENV.deref();
 			ISeq rargs = argsyms.rseq();
 			if(rargs != null)
