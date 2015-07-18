@@ -16,11 +16,14 @@ package clojure.lang;
 import java.util.Iterator;
 import java.util.RandomAccess;
 
+import clojure.asm.Type;
+
 public class Tuple {
     static final int MAX_SIZE = 6;
-    public static IPersistentVector EMPTY = new T0();
+    public static T0 EMPTY = new T0();
+	public static final Class<T0> EMPTY_TYPE = T0.class;
 
-    public static IPersistentVector create() {
+    public static T0 create() {
 	return EMPTY;
     }
 

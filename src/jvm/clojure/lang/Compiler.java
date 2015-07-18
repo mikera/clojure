@@ -155,7 +155,7 @@ final static Type IPERSISTENTMAP_TYPE = Type.getType(IPersistentMap.class);
 final static Type IOBJ_TYPE = Type.getType(IObj.class);
 final static Type TUPLE_TYPE = Type.getType(Tuple.class);
 final static Method createTupleMethods[] = {
-		Method.getMethod("clojure.lang.IPersistentVector create()"),
+		Method.getMethod("clojure.lang.Tuple$T0 create()"),
         Method.getMethod("clojure.lang.Tuple$T1 create(Object)"),
         Method.getMethod("clojure.lang.Tuple$T2 create(Object,Object)"),
         Method.getMethod("clojure.lang.Tuple$T3 create(Object,Object,Object)"),
@@ -2914,8 +2914,8 @@ public static class EmptyExpr implements Expr{
 	final static Type HASHMAP_TYPE = Type.getType(PersistentArrayMap.class);
 	final static Type HASHSET_TYPE = Type.getType(PersistentHashSet.class);
 	final static Type VECTOR_TYPE = Type.getType(PersistentVector.class);
-    final static Type IVECTOR_TYPE = Type.getType(IPersistentVector.class);
     final static Type TUPLE_TYPE = Type.getType(Tuple.class);
+    final static Type EMPTY_TUPLE_TYPE = Type.getType(Tuple.EMPTY.getClass());
 	final static Type LIST_TYPE = Type.getType(PersistentList.class);
 	final static Type EMPTY_LIST_TYPE = Type.getType(PersistentList.EmptyList.class);
 
@@ -2932,7 +2932,7 @@ public static class EmptyExpr implements Expr{
 		if(coll instanceof IPersistentList)
 			gen.getStatic(LIST_TYPE, "EMPTY", EMPTY_LIST_TYPE);
 		else if(coll instanceof IPersistentVector)
-			gen.getStatic(TUPLE_TYPE, "EMPTY", IVECTOR_TYPE);
+			gen.getStatic(TUPLE_TYPE, "EMPTY", EMPTY_TUPLE_TYPE);
 		else if(coll instanceof IPersistentMap)
 				gen.getStatic(HASHMAP_TYPE, "EMPTY", HASHMAP_TYPE);
 			else if(coll instanceof IPersistentSet)
