@@ -1444,7 +1444,7 @@ public class Tuple {
 		}
 
 		@Override
-		public ISeq next() {
+		public TupleSeq next() {
 			int nextPos=pos+1;
 			return (nextPos<count)?new TupleSeq(tuple,nextPos,count):null;
 		}
