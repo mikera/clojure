@@ -111,6 +111,10 @@ public class Tuple {
         public final IPersistentMap meta(){
             return null;
         }
+        
+        public TupleSeq seq() {
+        	return new TupleSeq(this);
+        }
     }
     
     
@@ -216,7 +220,7 @@ public class Tuple {
 	    };
 	}
 
-	public ISeq seq() {
+	public TupleSeq seq() {
 	    return null;
 	}
     }
@@ -353,51 +357,6 @@ public class Tuple {
 		    throw new UnsupportedOperationException();
 		}
 	    };
-	}
-
-	class UnrolledChunkedSeq extends ASeq implements IChunkedSeq, Counted {
-	    private final IPersistentMap meta;
-	    private final int offset;
-
-	    UnrolledChunkedSeq(IPersistentMap meta, int offset) {
-		this.offset = offset;
-		this.meta = meta;
-	    }
-
-	    public IChunk chunkedFirst() {
-		return new ArrayChunk(toArray(), 0);
-	    }
-
-	    public ISeq chunkedNext() {
-		return null;
-	    }
-
-	    public ISeq chunkedMore() {
-		return PersistentList.EMPTY;
-	    }
-
-	    public UnrolledChunkedSeq withMeta(IPersistentMap meta) {
-		return new UnrolledChunkedSeq(meta, offset);
-	    }
-
-	    public Object first() {
-		return nth(offset);
-	    }
-
-	    public ISeq next() {
-		if (offset < 0) {
-		    return new UnrolledChunkedSeq(null, offset + 1);
-		}
-		return null;
-	    }
-
-	    public int count() {
-		return 1 - offset;
-	    }
-	}
-
-	public ISeq seq() {
-	    return new UnrolledChunkedSeq(null, 0);
 	}
     }
 
@@ -578,51 +537,6 @@ public class Tuple {
 		    throw new UnsupportedOperationException();
 		}
 	    };
-	}
-
-	class UnrolledChunkedSeq extends ASeq implements IChunkedSeq, Counted {
-	    private final IPersistentMap meta;
-	    private final int offset;
-
-	    UnrolledChunkedSeq(IPersistentMap meta, int offset) {
-		this.offset = offset;
-		this.meta = meta;
-	    }
-
-	    public IChunk chunkedFirst() {
-		return new ArrayChunk(toArray(), 0);
-	    }
-
-	    public ISeq chunkedNext() {
-		return null;
-	    }
-
-	    public ISeq chunkedMore() {
-		return PersistentList.EMPTY;
-	    }
-
-	    public UnrolledChunkedSeq withMeta(IPersistentMap meta) {
-		return new UnrolledChunkedSeq(meta, offset);
-	    }
-
-	    public Object first() {
-		return nth(offset);
-	    }
-
-	    public ISeq next() {
-		if (offset < 1) {
-		    return new UnrolledChunkedSeq(null, offset + 1);
-		}
-		return null;
-	    }
-
-	    public int count() {
-		return 2 - offset;
-	    }
-	}
-
-	public ISeq seq() {
-	    return new UnrolledChunkedSeq(null, 0);
 	}
     }
 
@@ -807,51 +721,6 @@ public class Tuple {
 		    throw new UnsupportedOperationException();
 		}
 	    };
-	}
-
-	class UnrolledChunkedSeq extends ASeq implements IChunkedSeq, Counted {
-	    private final IPersistentMap meta;
-	    private final int offset;
-
-	    UnrolledChunkedSeq(IPersistentMap meta, int offset) {
-		this.offset = offset;
-		this.meta = meta;
-	    }
-
-	    public IChunk chunkedFirst() {
-		return new ArrayChunk(toArray(), 0);
-	    }
-
-	    public ISeq chunkedNext() {
-		return null;
-	    }
-
-	    public ISeq chunkedMore() {
-		return PersistentList.EMPTY;
-	    }
-
-	    public UnrolledChunkedSeq withMeta(IPersistentMap meta) {
-		return new UnrolledChunkedSeq(meta, offset);
-	    }
-
-	    public Object first() {
-		return nth(offset);
-	    }
-
-	    public ISeq next() {
-		if (offset < 2) {
-		    return new UnrolledChunkedSeq(null, offset + 1);
-		}
-		return null;
-	    }
-
-	    public int count() {
-		return 3 - offset;
-	    }
-	}
-
-	public ISeq seq() {
-	    return new UnrolledChunkedSeq(null, 0);
 	}
     }
 
@@ -1060,51 +929,6 @@ public class Tuple {
 		    throw new UnsupportedOperationException();
 		}
 	    };
-	}
-
-	class UnrolledChunkedSeq extends ASeq implements IChunkedSeq, Counted {
-	    private final IPersistentMap meta;
-	    private final int offset;
-
-	    UnrolledChunkedSeq(IPersistentMap meta, int offset) {
-		this.offset = offset;
-		this.meta = meta;
-	    }
-
-	    public IChunk chunkedFirst() {
-		return new ArrayChunk(toArray(), 0);
-	    }
-
-	    public ISeq chunkedNext() {
-		return null;
-	    }
-
-	    public ISeq chunkedMore() {
-		return PersistentList.EMPTY;
-	    }
-
-	    public UnrolledChunkedSeq withMeta(IPersistentMap meta) {
-		return new UnrolledChunkedSeq(meta, offset);
-	    }
-
-	    public Object first() {
-		return nth(offset);
-	    }
-
-	    public ISeq next() {
-		if (offset < 3) {
-		    return new UnrolledChunkedSeq(null, offset + 1);
-		}
-		return null;
-	    }
-
-	    public int count() {
-		return 4 - offset;
-	    }
-	}
-
-	public ISeq seq() {
-	    return new UnrolledChunkedSeq(null, 0);
 	}
     }
 
@@ -1337,51 +1161,6 @@ public class Tuple {
 		    throw new UnsupportedOperationException();
 		}
 	    };
-	}
-
-	class UnrolledChunkedSeq extends ASeq implements IChunkedSeq, Counted {
-	    private final IPersistentMap meta;
-	    private final int offset;
-
-	    UnrolledChunkedSeq(IPersistentMap meta, int offset) {
-		this.offset = offset;
-		this.meta = meta;
-	    }
-
-	    public IChunk chunkedFirst() {
-		return new ArrayChunk(toArray(), 0);
-	    }
-
-	    public ISeq chunkedNext() {
-		return null;
-	    }
-
-	    public ISeq chunkedMore() {
-		return PersistentList.EMPTY;
-	    }
-
-	    public UnrolledChunkedSeq withMeta(IPersistentMap meta) {
-		return new UnrolledChunkedSeq(meta, offset);
-	    }
-
-	    public Object first() {
-		return nth(offset);
-	    }
-
-	    public ISeq next() {
-		if (offset < 4) {
-		    return new UnrolledChunkedSeq(null, offset + 1);
-		}
-		return null;
-	    }
-
-	    public int count() {
-		return 5 - offset;
-	    }
-	}
-
-	public ISeq seq() {
-	    return new UnrolledChunkedSeq(null, 0);
 	}
     }
 
@@ -1642,51 +1421,39 @@ public class Tuple {
 		}
 	    };
 	}
-
-	class UnrolledChunkedSeq extends ASeq implements IChunkedSeq, Counted {
-	    private final IPersistentMap meta;
-	    private final int offset;
-
-	    UnrolledChunkedSeq(IPersistentMap meta, int offset) {
-		this.offset = offset;
-		this.meta = meta;
-	    }
-
-	    public IChunk chunkedFirst() {
-		return new ArrayChunk(toArray(), 0);
-	    }
-
-	    public ISeq chunkedNext() {
-		return null;
-	    }
-
-	    public ISeq chunkedMore() {
-		return PersistentList.EMPTY;
-	    }
-
-	    public UnrolledChunkedSeq withMeta(IPersistentMap meta) {
-		return new UnrolledChunkedSeq(meta, offset);
-	    }
-
-	    public Object first() {
-		return nth(offset);
-	    }
-
-	    public ISeq next() {
-		if (offset < 5) {
-		    return new UnrolledChunkedSeq(null, offset + 1);
+    }
+    
+    static class TupleSeq extends ASeq {
+    	final ATuple tuple;
+    	final int pos;
+    	final int count;
+    	
+    	public TupleSeq(ATuple tuple, int pos, int count) {
+    		this.tuple=tuple;
+    		this.pos=pos;
+    		this.count=count;
+    	}
+    	
+    	public TupleSeq(ATuple tuple) {
+    		this(tuple,0,tuple.count());
+    	}
+    	
+		@Override
+		public Object first() {
+			return tuple.nth(pos);
 		}
-		return null;
-	    }
 
-	    public int count() {
-		return 6 - offset;
-	    }
-	}
+		@Override
+		public ISeq next() {
+			int nextPos=pos+1;
+			return (nextPos<count)?new TupleSeq(tuple,nextPos,count):null;
+		}
 
-	public ISeq seq() {
-	    return new UnrolledChunkedSeq(null, 0);
-	}
+		@Override
+		public Obj withMeta(IPersistentMap meta) {
+			return new Cons(meta,first(),next());
+		}
+    	
     }
 
     static class Transient extends AFn implements ITransientVector, Counted {
