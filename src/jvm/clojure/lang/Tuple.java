@@ -14,6 +14,7 @@
 package clojure.lang;
 
 import java.util.Iterator;
+import java.util.Collection;
 import java.util.RandomAccess;
 
 import clojure.asm.Type;
@@ -56,7 +57,7 @@ public class Tuple {
     
     public static IPersistentVector createFromColl(Object coll){
         if(coll instanceof RandomAccess) {
-            switch(RT.count(coll)){
+            switch(((Collection) coll).size()){
                 case 0:
                     return EMPTY;
                 case 1:
@@ -103,10 +104,11 @@ public class Tuple {
             return PersistentVector.adopt(toArray());
         }
 
-        public final IObj withMeta(IPersistentMap meta){
-            if (meta==null) return this;
-        	return vec().withMeta(meta);
-        }
+	    public IObj withMeta(IPersistentMap meta){
+	        if(meta == null)
+	            return this;
+	        return vec().withMeta(meta);
+	    }
 
         public final IPersistentMap meta(){
             return null;

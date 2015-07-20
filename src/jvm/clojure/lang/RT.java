@@ -27,6 +27,7 @@ import java.security.PrivilegedAction;
 import java.net.URL;
 import java.net.JarURLConnection;
 import java.nio.charset.Charset;
+import java.net.URLConnection;
 
 public class RT{
 
@@ -385,11 +386,17 @@ static public void init() {
 }
 
 static public long lastModified(URL url, String libfile) throws IOException{
-	if(url.getProtocol().equals("jar")) {
-		return ((JarURLConnection) url.openConnection()).getJarFile().getEntry(libfile).getTime();
+	URLConnection connection = url.openConnection();
+	try {
+		if (url.getProtocol().equals("jar"))
+			return ((JarURLConnection) connection).getJarFile().getEntry(libfile).getTime();
+		else
+			return connection.getLastModified();
 	}
-	else {
-		return url.openConnection().getLastModified();
+	finally {
+		InputStream ins = connection.getInputStream();
+		if (ins != null)
+			ins.close();
 	}
 }
 
@@ -1689,7 +1696,7 @@ static public Object[] seqToArray(ISeq seq){
     }
 
 static public Object seqToTypedArray(ISeq seq) {
-	Class type = (seq != null) ? seq.first().getClass() : Object.class;
+	Class type = (seq != null && seq.first() != null) ? seq.first().getClass() : Object.class;
 	return seqToTypedArray(type, seq);
 }
 

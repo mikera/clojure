@@ -251,6 +251,13 @@
     (is (try (load-string "(.submit (java.util.concurrent.Executors/newCachedThreadPool) ^Runnable #())")
              (catch Compiler$CompilerException e nil)))))
 
+(defn ^{:tag 'long} hinted-primfn [^long x] x)
+(defn unhinted-primfn [^long x] x)
+(deftest CLJ-1533-primitive-functions-lose-tag
+  (should-not-reflect #(Math/abs (clojure.test-clojure.compilation/hinted-primfn 1)))
+  (should-not-reflect #(Math/abs ^long (clojure.test-clojure.compilation/unhinted-primfn 1))))
+
+
 (defrecord Y [a])
 #clojure.test_clojure.compilation.Y[1]
 (defrecord Y [b])
@@ -297,6 +304,13 @@
          (class (clojure.test_clojure.compilation.examples.T.))
          (class (clojure.test-clojure.compilation.examples/->T)))))
 
+(deftest clj-1208
+  ;; clojure.test-clojure.compilation.load-ns has not been loaded
+  ;; so this would fail if the deftype didn't load it in its static
+  ;; initializer as the implementation of f requires a var from
+  ;; that namespace
+  (is (= 1 (.f (clojure.test_clojure.compilation.load_ns.x.)))))
+
 (deftest clj-1568
   (let [compiler-fails-at?
           (fn [row col source]
@@ -322,3 +336,27 @@
 
 
                    (/ 1 0)"))))
+
+(deftype CLJ1399 [munged-field-name])
+
+(deftest clj-1399
+  ;; throws an exception on failure
+  (is (eval `(fn [] ~(CLJ1399. 1)))))
+
+(deftest CLJ-1250-this-clearing
+  (let [closed-over-in-catch (let [x :foo]
+                               (fn []
+                                 (try
+                                   (throw (Exception. "boom"))
+                                   (catch Exception e
+                                     x)))) ;; x should remain accessible to the fn
+
+        a (atom nil)
+        closed-over-in-finally (fn []
+                                 (try
+                                   :ret
+                                   (finally
+                                     (reset! a :run))))]
+    (is (= :foo (closed-over-in-catch)))
+    (is (= :ret (closed-over-in-finally)))
+    (is (= :run @a))))
