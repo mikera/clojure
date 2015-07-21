@@ -36,7 +36,7 @@ public Object first(){
 }
 
 public ISeq next(){
-	return more().seq();
+	return _more;
 }
 
 public ISeq more(){
