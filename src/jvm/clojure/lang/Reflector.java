@@ -421,11 +421,8 @@ static public List getMethods(Class c, int arity, String name, boolean getStatic
 	return methods;
 }
 
-
-static Object boxArg(Class paramType, Object arg){
-	if(!paramType.isPrimitive())
-		return paramType.cast(arg);
-	else if(paramType == boolean.class)
+private static Object boxPrimitiveArg(Class paramType, Object arg) {
+	if(paramType == boolean.class)
 		return Boolean.class.cast(arg);
 	else if(paramType == char.class)
 		return Character.class.cast(arg);
@@ -449,17 +446,23 @@ static Object boxArg(Class paramType, Object arg){
 	                                   ", given: " + arg.getClass().getName());
 }
 
+static Object boxArg(Class paramType, Object arg){
+	if(!paramType.isPrimitive())
+		return arg;
+	return boxPrimitiveArg(paramType,arg);
+}
+
+// note: mutates args array if necessary
 static Object[] boxArgs(Class[] params, Object[] args){
 	if(params.length == 0)
 		return null;
-	Object[] ret = new Object[params.length];
 	for(int i = 0; i < params.length; i++)
 		{
 		Object arg = args[i];
 		Class paramType = params[i];
-		ret[i] = boxArg(paramType, arg);
+		args[i] = boxArg(paramType, arg);
 		}
-	return ret;
+	return args;
 }
 
 static public boolean paramArgTypeMatch(Class paramType, Class argType){
