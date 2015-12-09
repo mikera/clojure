@@ -21,10 +21,54 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Reflector{
+	
+@SuppressWarnings("rawtypes")
+private static final class InstanceMethodCache {
+	final Class klass;
+	final List methods;
+	final String methodName;
+	final int arity;
+	
+	InstanceMethodCache(Class klass, List methods, String methodname, int arity) {
+		this.klass=klass;
+		this.methods=methods;
+		this.methodName=methodname;
+		this.arity=arity;
+	}
+	
+	static InstanceMethodCache create(Class klass, int arity, String methodName) {
+		List<Method> methods=getMethods(klass,arity,methodName,false);
+		return new InstanceMethodCache(klass,methods,methodName,arity);
+	}
+}
+
+// single-element cache for last used reflection methods
+private static final int CACHED_ARITIES=6;
+private static InstanceMethodCache[] instanceMethodCache=new InstanceMethodCache[CACHED_ARITIES];
+static {
+	InstanceMethodCache dummy=InstanceMethodCache.create(Object.class,0,"toString");
+	for (int i=0; i<CACHED_ARITIES; i++) {
+		instanceMethodCache[i]=dummy;
+	}
+}
+
+private static List<Method> getCachedInstanceMethods(Class klass, int arity, String methodName) {
+	if (arity<CACHED_ARITIES) {
+		InstanceMethodCache imc=instanceMethodCache[arity];
+		if ((klass==imc.klass)&&(methodName.equals(imc.methodName))&&arity==imc.arity) {
+			// Cache hit! Hurrah!
+		} else {
+			imc=InstanceMethodCache.create(klass, arity, methodName);
+			instanceMethodCache[arity]=imc;
+		}
+		return imc.methods;
+	}
+	return getMethods(klass,arity,methodName,false);
+}
 
 public static Object invokeInstanceMethod(Object target, String methodName, Object[] args) {
 	Class c = target.getClass();
-	List methods = getMethods(c, args.length, methodName, false);
+	List methods = getCachedInstanceMethods(c, args.length, methodName);
 	return invokeMatchingMethod(methodName, methods, target, args);
 }
 
@@ -423,6 +467,7 @@ static public List getMethods(Class c, int arity, String name, boolean getStatic
 
 
 static Object boxArg(Class paramType, Object arg){
+	
 	if(!paramType.isPrimitive())
 		return paramType.cast(arg);
 	else if(paramType == boolean.class)
