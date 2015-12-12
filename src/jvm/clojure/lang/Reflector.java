@@ -27,18 +27,16 @@ private static final class InstanceMethodCache {
 	final Class klass;
 	final List methods;
 	final String methodName;
-	final int arity;
 	
-	InstanceMethodCache(Class klass, List methods, String methodname, int arity) {
+	InstanceMethodCache(Class klass, List methods, String methodname) {
 		this.klass=klass;
 		this.methods=methods;
 		this.methodName=methodname;
-		this.arity=arity;
 	}
 	
 	static InstanceMethodCache create(Class klass, int arity, String methodName) {
 		List<Method> methods=getMethods(klass,arity,methodName,false);
-		return new InstanceMethodCache(klass,methods,methodName,arity);
+		return new InstanceMethodCache(klass,methods,methodName);
 	}
 }
 
@@ -55,7 +53,7 @@ static {
 private static List<Method> getCachedInstanceMethods(Class klass, int arity, String methodName) {
 	if (arity<CACHED_ARITIES) {
 		InstanceMethodCache imc=instanceMethodCache[arity];
-		if ((klass==imc.klass)&&(methodName.equals(imc.methodName))&&arity==imc.arity) {
+		if ((klass==imc.klass)&&(methodName.equals(imc.methodName))) {
 			// Cache hit! Hurrah!
 		} else {
 			imc=InstanceMethodCache.create(klass, arity, methodName);
