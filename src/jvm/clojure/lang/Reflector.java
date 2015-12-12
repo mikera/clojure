@@ -541,21 +541,18 @@ static public boolean paramArgTypeMatch(Class paramType, Class argType){
 }
 
 static boolean isCongruent(Class[] params, Object[] args){
-	boolean ret = false;
 	if(args == null)
 		return params.length == 0;
-	if(params.length == args.length)
+	if(params.length != args.length) return false;
+	
+	for(int i = 0; i < params.length; i++)
 		{
-		ret = true;
-		for(int i = 0; ret && i < params.length; i++)
-			{
-			Object arg = args[i];
-			Class argType = (arg == null) ? null : arg.getClass();
-			Class paramType = params[i];
-			ret = paramArgTypeMatch(paramType, argType);
-			}
+		Object arg = args[i];
+		Class argType = (arg == null) ? null : arg.getClass();
+		Class paramType = params[i];
+		if (!paramArgTypeMatch(paramType, argType)) return false;
 		}
-	return ret;
+	return true;
 }
 
 public static Object prepRet(Class c, Object x){
