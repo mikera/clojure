@@ -102,6 +102,7 @@ static Object invokeMatchingMethod(String methodName, List methods, Object targe
 	else //overloaded w/same arity
 		{
 		Method foundm = null;
+		Class[] foundParams = null;
 		for(Iterator i = methods.iterator(); i.hasNext();)
 			{
 			m = (Method) i.next();
@@ -109,17 +110,19 @@ static Object invokeMatchingMethod(String methodName, List methods, Object targe
 			Class[] params = m.getParameterTypes();
 			if(isCongruent(params, args))
 				{
-				if(foundm == null || Compiler.subsumes(params, foundm.getParameterTypes()))
+				if(foundm == null || Compiler.subsumes(params, foundParams))
 					{
 					foundm = m;
-					boxedArgs = boxArgs(params, args);
+					foundParams=params;
 					}
 				}
 			}
+		
+		if(foundm == null)
+			throw new IllegalArgumentException(noMethodReport(methodName,target));
 		m = foundm;
+		boxedArgs = boxArgs(foundParams, args);
 		}
-	if(m == null)
-		throw new IllegalArgumentException(noMethodReport(methodName,target));
 
 	if(!Modifier.isPublic(m.getDeclaringClass().getModifiers()))
 		{
