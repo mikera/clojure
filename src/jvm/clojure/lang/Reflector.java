@@ -44,7 +44,7 @@ private static final class InstanceMethodCache {
 
 // single-element cache for last used reflection methods
 private static final int CACHED_ARITIES=6;
-private static InstanceMethodCache[] instanceMethodCache=new InstanceMethodCache[CACHED_ARITIES];
+private static final InstanceMethodCache[] instanceMethodCache=new InstanceMethodCache[CACHED_ARITIES];
 static {
 	InstanceMethodCache dummy=InstanceMethodCache.create(Object.class,0,"toString");
 	for (int i=0; i<CACHED_ARITIES; i++) {
