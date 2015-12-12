@@ -37,3 +37,9 @@
 (def inst (IBar$Factory/get))
 (deftest invoking-nonpublic-super
   (is (= "stuff" (.stuff inst))))
+
+(deftest invoking-boxed-argument
+  (let [s (identity "Bar")]
+    (is (= \B (.charAt s (short 0))))
+    (is (= \a (.charAt s (int 1))))
+    (is (= \r (.charAt s 2)))))
