@@ -494,15 +494,15 @@ static Object boxArg(Class paramType, Object arg){
 	return boxPrimitiveArg(paramType,arg);
 }
 
-// note: mutates args array if necessary
+// note: mutates args array if only if necessary for primitive arguments
 static Object[] boxArgs(Class[] params, Object[] args){
 	if(params.length == 0)
 		return null;
 	for(int i = 0; i < params.length; i++)
 		{
-		Object arg = args[i];
 		Class paramType = params[i];
-		args[i] = boxArg(paramType, arg);
+		if (paramType!=Object.class) 
+			args[i] = boxArg(paramType, args[i]);
 		}
 	return args;
 }
