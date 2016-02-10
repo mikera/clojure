@@ -6,3 +6,6 @@ nbproject/private/
 maven-classpath
 maven-classpath.properties
 .idea/
+/.settings/
+/.project
+/.classpath
